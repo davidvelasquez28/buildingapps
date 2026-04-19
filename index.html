@@ -1,12 +1,71 @@
-import React, { useState, useEffect } from "react";
-import { Home, Settings, Dumbbell, Calendar, BarChart3, ListChecks, StickyNote, Plus, Trash2, Check, ExternalLink, RotateCcw, Flame, Sparkles, X, Edit3 } from "lucide-react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Control Room — App Progress Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: #FAF3E3;
+    color: #2A2A2A;
+  }
+  input, textarea, button, select { font-family: 'DM Sans', system-ui, sans-serif; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid #E85D4E; outline-offset: 2px; }
+  .screen-card { transition: transform 0.15s, box-shadow 0.15s; }
+  .screen-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #2A2A2A !important; }
+  .screen-card:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 #2A2A2A !important; }
+  select { cursor: pointer; }
+  textarea { resize: vertical; }
+  .nav-item-hover:hover { background: #F5ECDE !important; }
+  @media (max-width: 768px) {
+    .app-container { flex-direction: column !important; }
+    .sidebar { width: 100% !important; height: auto !important; position: relative !important; border-right: none !important; border-bottom: 2px solid #2A2A2A !important; }
+    .main-content { padding: 24px 20px 60px 20px !important; }
+    .page-title { font-size: 32px !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+
+// --- Icons (inline SVG to avoid needing lucide-react) ---
+const Icon = ({ children, size = 16, color = "currentColor", strokeWidth = 2 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+       fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    {children}
+  </svg>
+);
+const HomeIcon = (p) => <Icon {...p}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Icon>;
+const ListChecksIcon = (p) => <Icon {...p}><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></Icon>;
+const StickyNoteIcon = (p) => <Icon {...p}><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v6h6"/></Icon>;
+const PlusIcon = (p) => <Icon {...p}><path d="M12 5v14"/><path d="M5 12h14"/></Icon>;
+const Trash2Icon = (p) => <Icon {...p}><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></Icon>;
+const CheckIcon = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
+const ExternalLinkIcon = (p) => <Icon {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></Icon>;
+const RotateCcwIcon = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></Icon>;
+const FlameIcon = (p) => <Icon {...p}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></Icon>;
+const SparklesIcon = (p) => <Icon {...p}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></Icon>;
+const XIcon = (p) => <Icon {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
+const Edit3Icon = (p) => <Icon {...p}><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></Icon>;
 
 const SCREENS = [
-  { id: "home", label: "Home Page", icon: Home, emoji: "🏠" },
-  { id: "settings", label: "Settings", icon: Settings, emoji: "⚙️" },
-  { id: "log", label: "Log Workout", icon: Dumbbell, emoji: "💪" },
-  { id: "calendar", label: "Calendar", icon: Calendar, emoji: "📅" },
-  { id: "history", label: "History / Data", icon: BarChart3, emoji: "📊" },
+  { id: "home", label: "Home Page", emoji: "🏠" },
+  { id: "settings", label: "Settings", emoji: "⚙️" },
+  { id: "log", label: "Log Workout", emoji: "💪" },
+  { id: "calendar", label: "Calendar", emoji: "📅" },
+  { id: "history", label: "History / Data", emoji: "📊" },
 ];
 
 const STATUS_OPTIONS = [
@@ -32,38 +91,43 @@ const DEFAULT_DATA = {
   globalNotes: "",
 };
 
-export default function App() {
+// --- storage helpers: localStorage instead of window.storage ---
+function loadData() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    if (!raw) return DEFAULT_DATA;
+    const parsed = JSON.parse(raw);
+    return {
+      screens: { ...DEFAULT_DATA.screens, ...(parsed.screens || {}) },
+      checklist: parsed.checklist || [],
+      globalNotes: parsed.globalNotes || "",
+    };
+  } catch (e) {
+    return DEFAULT_DATA;
+  }
+}
+function saveData(data) {
+  try {
+    localStorage.setItem(DATA_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error("save failed", e);
+  }
+}
+
+function App() {
   const [data, setData] = useState(DEFAULT_DATA);
   const [view, setView] = useState("dashboard");
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    (async () => {
-      try {
-        const result = await window.storage.get(DATA_KEY);
-        if (result?.value) {
-          const parsed = JSON.parse(result.value);
-          setData({
-            screens: { ...DEFAULT_DATA.screens, ...(parsed.screens || {}) },
-            checklist: parsed.checklist || [],
-            globalNotes: parsed.globalNotes || "",
-          });
-        }
-      } catch (e) {
-        // first load, nothing saved yet
-      }
-      setLoading(false);
-    })();
+    setData(loadData());
+    setLoading(false);
   }, []);
 
-  const persist = async (next) => {
+  const persist = (next) => {
     setData(next);
-    try {
-      await window.storage.set(DATA_KEY, JSON.stringify(next));
-    } catch (e) {
-      console.error("save failed", e);
-    }
+    saveData(next);
   };
 
   const updateScreen = (screenId, patch) => {
@@ -129,7 +193,7 @@ export default function App() {
     return (
       <div style={styles.loadingWrap}>
         <div style={styles.loadingInner}>
-          <Flame size={32} color="#E85D4E" />
+          <FlameIcon size={32} color="#E85D4E" />
           <span style={{ fontFamily: "Fraunces, serif", fontSize: 20, color: "#2A2A2A" }}>
             waking up...
           </span>
@@ -139,13 +203,11 @@ export default function App() {
   }
 
   return (
-    <div style={styles.app}>
-      <style>{globalCss}</style>
-
-      <aside style={styles.sidebar}>
+    <div style={styles.app} className="app-container">
+      <aside style={styles.sidebar} className="sidebar">
         <div style={styles.logoWrap}>
           <div style={styles.logoBadge}>
-            <Sparkles size={18} color="#FFF8EF" />
+            <SparklesIcon size={18} color="#FFF8EF" />
           </div>
           <div>
             <div style={styles.logoTitle}>control room</div>
@@ -157,7 +219,7 @@ export default function App() {
           <NavItem
             active={view === "dashboard"}
             onClick={() => setView("dashboard")}
-            icon={<Home size={16} />}
+            icon={<HomeIcon size={16} />}
             label="Dashboard"
           />
         </NavSection>
@@ -184,26 +246,26 @@ export default function App() {
           <NavItem
             active={view === "checklist"}
             onClick={() => setView("checklist")}
-            icon={<ListChecks size={16} />}
+            icon={<ListChecksIcon size={16} />}
             label="Expo Checklist"
           />
           <NavItem
             active={view === "notes"}
             onClick={() => setView("notes")}
-            icon={<StickyNote size={16} />}
+            icon={<StickyNoteIcon size={16} />}
             label="Global Notes"
           />
         </NavSection>
 
         <div style={styles.sidebarFooter}>
           <div style={styles.sidebarFooterInner}>
-            saved locally<br />
-            <span style={{ opacity: 0.6 }}>persists across sessions</span>
+            saved in your browser<br />
+            <span style={{ opacity: 0.6 }}>per-device · local only</span>
           </div>
         </div>
       </aside>
 
-      <main style={styles.main}>
+      <main style={styles.main} className="main-content">
         {view === "dashboard" && <Dashboard data={data} setView={setView} />}
         {SCREENS.find((s) => s.id === view) && (
           <ScreenView
@@ -246,15 +308,10 @@ function NavItem({ active, onClick, icon, label, badge }) {
   return (
     <button
       onClick={onClick}
+      className={active ? "" : "nav-item-hover"}
       style={{
         ...styles.navItem,
         ...(active ? styles.navItemActive : {}),
-      }}
-      onMouseEnter={(e) => {
-        if (!active) e.currentTarget.style.background = "#F5ECDE";
-      }}
-      onMouseLeave={(e) => {
-        if (!active) e.currentTarget.style.background = "transparent";
       }}
     >
       <span style={styles.navItemIcon}>{icon}</span>
@@ -283,7 +340,7 @@ function Dashboard({ data, setView }) {
       <div style={styles.pageHeader}>
         <div>
           <div style={styles.eyebrow}>overview</div>
-          <h1 style={styles.pageTitle}>
+          <h1 style={styles.pageTitle} className="page-title">
             let's ship this thing<span style={styles.titleAccent}>.</span>
           </h1>
           <p style={styles.pageSub}>
@@ -291,7 +348,7 @@ function Dashboard({ data, setView }) {
           </p>
         </div>
         <div style={styles.headerSticker}>
-          <Flame size={20} color="#E85D4E" />
+          <FlameIcon size={14} color="#E85D4E" />
           <span>in progress</span>
         </div>
       </div>
@@ -396,7 +453,7 @@ function ScreenView({
       <div style={styles.pageHeader}>
         <div>
           <div style={styles.eyebrow}>screen</div>
-          <h1 style={styles.pageTitle}>
+          <h1 style={styles.pageTitle} className="page-title">
             {screen.emoji} {screen.label}
           </h1>
         </div>
@@ -410,7 +467,7 @@ function ScreenView({
               value={urlDraft}
               onChange={(e) => setUrlDraft(e.target.value)}
               placeholder="paste your excalidraw link..."
-              style={styles.textInput}
+              style={{ ...styles.textInput, flex: 1, minWidth: 200 }}
             />
             <button
               style={styles.primaryBtn}
@@ -435,7 +492,7 @@ function ScreenView({
               rel="noopener noreferrer"
               style={styles.excalidrawLink}
             >
-              <ExternalLink size={14} />
+              <ExternalLinkIcon size={14} />
               open moodboard
             </a>
             <span style={styles.excalidrawUrl}>{screenData.excalidrawUrl}</span>
@@ -446,7 +503,7 @@ function ScreenView({
                 setEditingUrl(true);
               }}
             >
-              <Edit3 size={12} /> edit
+              <Edit3Icon size={12} /> edit
             </button>
           </div>
         )}
@@ -463,7 +520,7 @@ function ScreenView({
           style={{ ...styles.textInput, flex: 1 }}
         />
         <button style={styles.primaryBtn} onClick={handleAdd}>
-          <Plus size={16} /> add
+          <PlusIcon size={16} /> add
         </button>
       </div>
 
@@ -587,9 +644,7 @@ function ProblemRow({ problem, onUpdate, onDelete }) {
             }}
           >
             {STATUS_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
+              <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
           <select
@@ -598,9 +653,7 @@ function ProblemRow({ problem, onUpdate, onDelete }) {
             style={styles.prioritySelect}
           >
             {PRIORITY_OPTIONS.map((p) => (
-              <option key={p.value} value={p.value}>
-                {p.label} priority
-              </option>
+              <option key={p.value} value={p.value}>{p.label} priority</option>
             ))}
           </select>
         </div>
@@ -618,7 +671,7 @@ function ProblemRow({ problem, onUpdate, onDelete }) {
           e.currentTarget.style.color = "#94A3B8";
         }}
       >
-        <Trash2 size={14} />
+        <Trash2Icon size={14} />
       </button>
     </div>
   );
@@ -638,14 +691,14 @@ function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
       <div style={styles.pageHeader}>
         <div>
           <div style={styles.eyebrow}>ritual</div>
-          <h1 style={styles.pageTitle}>Expo checklist</h1>
+          <h1 style={styles.pageTitle} className="page-title">Expo checklist</h1>
           <p style={styles.pageSub}>
             Your steps for spinning things up each session. Add your own, check them off, reset when you're done.
           </p>
         </div>
         {items.length > 0 && (
           <button style={styles.resetBtn} onClick={onReset}>
-            <RotateCcw size={14} /> reset all
+            <RotateCcwIcon size={14} /> reset all
           </button>
         )}
       </div>
@@ -678,7 +731,7 @@ function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
           style={{ ...styles.textInput, flex: 1 }}
         />
         <button style={styles.primaryBtn} onClick={handleAdd}>
-          <Plus size={16} /> add step
+          <PlusIcon size={16} /> add step
         </button>
       </div>
 
@@ -704,7 +757,7 @@ function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
                   ...(item.done ? styles.checkboxDone : {}),
                 }}
               >
-                {item.done && <Check size={14} color="#FFF8EF" strokeWidth={3} />}
+                {item.done && <CheckIcon size={14} color="#FFF8EF" strokeWidth={3} />}
               </button>
               <span
                 style={{
@@ -727,7 +780,7 @@ function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
                   e.currentTarget.style.color = "#94A3B8";
                 }}
               >
-                <X size={14} />
+                <XIcon size={14} />
               </button>
             </div>
           ))
@@ -743,7 +796,7 @@ function NotesView({ notes, onChange }) {
       <div style={styles.pageHeader}>
         <div>
           <div style={styles.eyebrow}>scratch pad</div>
-          <h1 style={styles.pageTitle}>Global notes</h1>
+          <h1 style={styles.pageTitle} className="page-title">Global notes</h1>
           <p style={styles.pageSub}>
             Big-picture stuff. Things that don't fit under a single screen.
           </p>
@@ -758,18 +811,6 @@ function NotesView({ notes, onChange }) {
     </div>
   );
 }
-
-const globalCss = `
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-  * { box-sizing: border-box; }
-  body { margin: 0; }
-  input, textarea, button, select { font-family: 'DM Sans', system-ui, sans-serif; }
-  input:focus, textarea:focus, select:focus { outline: 2px solid #E85D4E; outline-offset: 2px; }
-  .screen-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #2A2A2A !important; }
-  .screen-card:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 #2A2A2A !important; }
-  select { cursor: pointer; }
-  textarea { resize: vertical; }
-`;
 
 const styles = {
   app: {
@@ -892,6 +933,7 @@ const styles = {
     alignItems: "flex-start",
     gap: 20,
     marginBottom: 8,
+    flexWrap: "wrap",
   },
   eyebrow: {
     fontSize: 11,
@@ -936,7 +978,7 @@ const styles = {
   },
   statGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
     gap: 14,
   },
   statCard: {
@@ -984,7 +1026,6 @@ const styles = {
     cursor: "pointer",
     textAlign: "left",
     boxShadow: "3px 3px 0 #2A2A2A",
-    transition: "transform 0.15s, box-shadow 0.15s",
     display: "flex",
     flexDirection: "column",
     gap: 6,
@@ -1073,7 +1114,7 @@ const styles = {
     whiteSpace: "nowrap",
     minWidth: 0,
   },
-  addRow: { display: "flex", gap: 8 },
+  addRow: { display: "flex", gap: 8, flexWrap: "wrap" },
   textInput: {
     padding: "10px 14px",
     border: "2px solid #2A2A2A",
@@ -1285,3 +1326,9 @@ const styles = {
     transition: "width 0.3s",
   },
 };
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
