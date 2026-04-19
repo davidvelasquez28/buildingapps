@@ -12,7 +12,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
   body {
     font-family: 'DM Sans', system-ui, sans-serif;
     background: #FAF3E3;
@@ -20,12 +20,11 @@
   }
   input, textarea, button, select { font-family: 'DM Sans', system-ui, sans-serif; }
   input:focus, textarea:focus, select:focus { outline: 2px solid #E85D4E; outline-offset: 2px; }
-  .screen-card { transition: transform 0.15s, box-shadow 0.15s; }
-  .screen-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #2A2A2A !important; }
-  .screen-card:active { transform: translate(1px, 1px); box-shadow: 2px 2px 0 #2A2A2A !important; }
   select { cursor: pointer; }
   textarea { resize: vertical; }
   .nav-item-hover:hover { background: #F5ECDE !important; }
+  .paste-zone-focus { border-color: #E85D4E !important; background: #FFF8EF !important; }
+  .img-card:hover .img-delete { opacity: 1 !important; }
   @media (max-width: 768px) {
     .app-container { flex-direction: column !important; }
     .sidebar { width: 100% !important; height: auto !important; position: relative !important; border-right: none !important; border-bottom: 2px solid #2A2A2A !important; }
@@ -38,16 +37,14 @@
 <div id="root"></div>
 
 <script type="text/babel" data-presets="react">
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
-// --- Icons (inline SVG to avoid needing lucide-react) ---
 const Icon = ({ children, size = 16, color = "currentColor", strokeWidth = 2 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
        fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
     {children}
   </svg>
 );
-const HomeIcon = (p) => <Icon {...p}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></Icon>;
 const ListChecksIcon = (p) => <Icon {...p}><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></Icon>;
 const StickyNoteIcon = (p) => <Icon {...p}><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v6h6"/></Icon>;
 const PlusIcon = (p) => <Icon {...p}><path d="M12 5v14"/><path d="M5 12h14"/></Icon>;
@@ -55,10 +52,14 @@ const Trash2Icon = (p) => <Icon {...p}><path d="M3 6h18"/><path d="M19 6v14a2 2 
 const CheckIcon = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
 const ExternalLinkIcon = (p) => <Icon {...p}><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></Icon>;
 const RotateCcwIcon = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></Icon>;
-const FlameIcon = (p) => <Icon {...p}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></Icon>;
 const SparklesIcon = (p) => <Icon {...p}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></Icon>;
 const XIcon = (p) => <Icon {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
 const Edit3Icon = (p) => <Icon {...p}><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></Icon>;
+const LockIcon = (p) => <Icon {...p}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></Icon>;
+const SaveIcon = (p) => <Icon {...p}><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></Icon>;
+const ImageIcon = (p) => <Icon {...p}><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></Icon>;
+const LinkIcon = (p) => <Icon {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></Icon>;
+const WandIcon = (p) => <Icon {...p}><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></Icon>;
 
 const SCREENS = [
   { id: "home", label: "Home Page", emoji: "🏠" },
@@ -68,135 +69,152 @@ const SCREENS = [
   { id: "history", label: "History / Data", emoji: "📊" },
 ];
 
-const STATUS_OPTIONS = [
-  { value: "todo", label: "To Do", bg: "#FEF3C7", fg: "#92400E", dot: "#F59E0B" },
-  { value: "in-progress", label: "In Progress", bg: "#DBEAFE", fg: "#1E40AF", dot: "#3B82F6" },
-  { value: "done", label: "Done", bg: "#D1FAE5", fg: "#065F46", dot: "#10B981" },
-  { value: "blocked", label: "Blocked", bg: "#FEE2E2", fg: "#991B1B", dot: "#EF4444" },
-];
-
-const PRIORITY_OPTIONS = [
-  { value: "low", label: "Low", color: "#94A3B8" },
-  { value: "medium", label: "Medium", color: "#F59E0B" },
-  { value: "high", label: "High", color: "#EF4444" },
-];
-
-const DATA_KEY = "tracker-data-v1";
+const DATA_KEY = "tracker-data-v2";
+const OLD_DATA_KEY = "tracker-data-v1";
 
 const DEFAULT_DATA = {
-  screens: Object.fromEntries(
-    SCREENS.map((s) => [s.id, { problems: [], notes: "", excalidrawUrl: "" }])
-  ),
   checklist: [],
+  excalidrawUrl: "",
   globalNotes: "",
+  prompts: "",
+  screens: Object.fromEntries(
+    SCREENS.map((s) => [s.id, { brainstorm: "", images: [] }])
+  ),
 };
 
-// --- storage helpers: localStorage instead of window.storage ---
 function loadData() {
   try {
     const raw = localStorage.getItem(DATA_KEY);
-    if (!raw) return DEFAULT_DATA;
-    const parsed = JSON.parse(raw);
-    return {
-      screens: { ...DEFAULT_DATA.screens, ...(parsed.screens || {}) },
-      checklist: parsed.checklist || [],
-      globalNotes: parsed.globalNotes || "",
-    };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        checklist: parsed.checklist || [],
+        excalidrawUrl: parsed.excalidrawUrl || "",
+        globalNotes: parsed.globalNotes || "",
+        prompts: parsed.prompts || "",
+        screens: Object.fromEntries(
+          SCREENS.map((s) => [
+            s.id,
+            {
+              brainstorm: parsed.screens?.[s.id]?.brainstorm || "",
+              images: parsed.screens?.[s.id]?.images || [],
+            },
+          ])
+        ),
+      };
+    }
+    const oldRaw = localStorage.getItem(OLD_DATA_KEY);
+    if (oldRaw) {
+      const old = JSON.parse(oldRaw);
+      let foundUrl = "";
+      for (const s of SCREENS) {
+        const u = old.screens?.[s.id]?.excalidrawUrl;
+        if (u) { foundUrl = u; break; }
+      }
+      const migrated = {
+        checklist: old.checklist || [],
+        excalidrawUrl: foundUrl,
+        globalNotes: old.globalNotes || "",
+        prompts: "",
+        screens: Object.fromEntries(
+          SCREENS.map((s) => [
+            s.id,
+            {
+              brainstorm: old.screens?.[s.id]?.notes || "",
+              images: [],
+            },
+          ])
+        ),
+      };
+      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
   } catch (e) {
-    return DEFAULT_DATA;
+    console.error("load failed", e);
   }
+  return DEFAULT_DATA;
 }
+
 function saveData(data) {
   try {
     localStorage.setItem(DATA_KEY, JSON.stringify(data));
+    return true;
   } catch (e) {
     console.error("save failed", e);
+    return false;
   }
+}
+
+function getStorageSize() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY) || "";
+    return new Blob([raw]).size;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
 }
 
 function App() {
   const [data, setData] = useState(DEFAULT_DATA);
-  const [view, setView] = useState("dashboard");
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [activeSection, setActiveSection] = useState("checklist");
+  const [storageSize, setStorageSize] = useState(0);
 
   useEffect(() => {
     setData(loadData());
     setLoading(false);
   }, []);
 
+  useEffect(() => {
+    if (!loading) setStorageSize(getStorageSize());
+  }, [data, loading]);
+
+  useEffect(() => {
+    if (loading) return;
+    const sections = ["checklist", "excalidraw", "notes", "prompts", ...SCREENS.map(s => s.id)];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [loading]);
+
   const persist = (next) => {
     setData(next);
-    saveData(next);
+    const ok = saveData(next);
+    if (!ok) {
+      alert("Couldn't save — you might be out of browser storage space. Try deleting some images.");
+    }
   };
 
-  const updateScreen = (screenId, patch) => {
-    persist({
-      ...data,
-      screens: { ...data.screens, [screenId]: { ...data.screens[screenId], ...patch } },
-    });
-  };
-
-  const addProblem = (screenId, text) => {
-    if (!text.trim()) return;
-    const screen = data.screens[screenId];
-    const newProblem = {
-      id: Date.now().toString(),
-      text: text.trim(),
-      status: "todo",
-      priority: "medium",
-      createdAt: Date.now(),
-    };
-    updateScreen(screenId, { problems: [newProblem, ...screen.problems] });
-  };
-
-  const updateProblem = (screenId, problemId, patch) => {
-    const screen = data.screens[screenId];
-    updateScreen(screenId, {
-      problems: screen.problems.map((p) => (p.id === problemId ? { ...p, ...patch } : p)),
-    });
-  };
-
-  const deleteProblem = (screenId, problemId) => {
-    const screen = data.screens[screenId];
-    updateScreen(screenId, { problems: screen.problems.filter((p) => p.id !== problemId) });
-  };
-
-  const addChecklistItem = (text) => {
-    if (!text.trim()) return;
-    persist({
-      ...data,
-      checklist: [...data.checklist, { id: Date.now().toString(), text: text.trim(), done: false }],
-    });
-  };
-
-  const toggleChecklistItem = (id) => {
-    persist({
-      ...data,
-      checklist: data.checklist.map((i) => (i.id === id ? { ...i, done: !i.done } : i)),
-    });
-  };
-
-  const deleteChecklistItem = (id) => {
-    persist({ ...data, checklist: data.checklist.filter((i) => i.id !== id) });
-  };
-
-  const resetChecklist = () => {
-    persist({ ...data, checklist: data.checklist.map((i) => ({ ...i, done: false })) });
-  };
-
-  const updateGlobalNotes = (text) => {
-    persist({ ...data, globalNotes: text });
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   if (loading) {
     return (
       <div style={styles.loadingWrap}>
         <div style={styles.loadingInner}>
-          <FlameIcon size={32} color="#E85D4E" />
-          <span style={{ fontFamily: "Fraunces, serif", fontSize: 20, color: "#2A2A2A" }}>
-            waking up...
-          </span>
+          <SparklesIcon size={28} color="#E85D4E" />
+          <span style={{ fontFamily: "Fraunces, serif", fontSize: 20 }}>waking up...</span>
         </div>
       </div>
     );
@@ -204,94 +222,158 @@ function App() {
 
   return (
     <div style={styles.app} className="app-container">
-      <aside style={styles.sidebar} className="sidebar">
-        <div style={styles.logoWrap}>
-          <div style={styles.logoBadge}>
-            <SparklesIcon size={18} color="#FFF8EF" />
-          </div>
-          <div>
-            <div style={styles.logoTitle}>control room</div>
-            <div style={styles.logoSub}>app progress tracker</div>
-          </div>
-        </div>
-
-        <NavSection title="overview">
-          <NavItem
-            active={view === "dashboard"}
-            onClick={() => setView("dashboard")}
-            icon={<HomeIcon size={16} />}
-            label="Dashboard"
-          />
-        </NavSection>
-
-        <NavSection title="screens">
-          {SCREENS.map((s) => {
-            const openCount = data.screens[s.id].problems.filter(
-              (p) => p.status !== "done"
-            ).length;
-            return (
-              <NavItem
-                key={s.id}
-                active={view === s.id}
-                onClick={() => setView(s.id)}
-                icon={<span style={{ fontSize: 14 }}>{s.emoji}</span>}
-                label={s.label}
-                badge={openCount > 0 ? openCount : null}
-              />
-            );
-          })}
-        </NavSection>
-
-        <NavSection title="tools">
-          <NavItem
-            active={view === "checklist"}
-            onClick={() => setView("checklist")}
-            icon={<ListChecksIcon size={16} />}
-            label="Expo Checklist"
-          />
-          <NavItem
-            active={view === "notes"}
-            onClick={() => setView("notes")}
-            icon={<StickyNoteIcon size={16} />}
-            label="Global Notes"
-          />
-        </NavSection>
-
-        <div style={styles.sidebarFooter}>
-          <div style={styles.sidebarFooterInner}>
-            saved in your browser<br />
-            <span style={{ opacity: 0.6 }}>per-device · local only</span>
-          </div>
-        </div>
-      </aside>
-
+      <Sidebar
+        activeSection={activeSection}
+        onNavigate={scrollTo}
+        storageSize={storageSize}
+      />
       <main style={styles.main} className="main-content">
-        {view === "dashboard" && <Dashboard data={data} setView={setView} />}
-        {SCREENS.find((s) => s.id === view) && (
-          <ScreenView
-            screen={SCREENS.find((s) => s.id === view)}
-            screenData={data.screens[view]}
-            onAddProblem={(text) => addProblem(view, text)}
-            onUpdateProblem={(pid, patch) => updateProblem(view, pid, patch)}
-            onDeleteProblem={(pid) => deleteProblem(view, pid)}
-            onUpdateNotes={(text) => updateScreen(view, { notes: text })}
-            onUpdateExcalidraw={(url) => updateScreen(view, { excalidrawUrl: url })}
-            filter={filter}
-            setFilter={setFilter}
+        <ChecklistSection
+          items={data.checklist}
+          onChange={(checklist) => persist({ ...data, checklist })}
+        />
+        <ExcalidrawSection
+          url={data.excalidrawUrl}
+          onChange={(excalidrawUrl) => persist({ ...data, excalidrawUrl })}
+        />
+        <LockableTextSection
+          id="notes"
+          eyebrow="scratch pad"
+          title="Global Notes"
+          subtitle="Big-picture stuff. Things that don't fit under a single screen."
+          icon={<StickyNoteIcon size={14} color="#E85D4E" />}
+          stickerText="notes"
+          placeholder="architecture thoughts, naming decisions, feature ideas for later..."
+          value={data.globalNotes}
+          onSave={(globalNotes) => persist({ ...data, globalNotes })}
+          minHeight={220}
+        />
+        <LockableTextSection
+          id="prompts"
+          eyebrow="library"
+          title="Prompts Used"
+          subtitle="Stash the prompts that worked so you can reuse them."
+          icon={<WandIcon size={14} color="#E85D4E" />}
+          stickerText="prompts"
+          placeholder={"// midjourney — start button\na glowing rounded button, coral gradient...\n\n// claude — expo setup\nhelp me debug this error in..."}
+          value={data.prompts}
+          onSave={(prompts) => persist({ ...data, prompts })}
+          minHeight={220}
+          mono
+        />
+        <div style={styles.screensHeader}>
+          <div style={styles.eyebrow}>the screens</div>
+          <h2 style={styles.bigSectionTitle}>
+            Brainstorm <span style={{ color: "#E85D4E" }}>each one</span>
+          </h2>
+          <p style={styles.pageSub}>
+            A space per screen. Write what you're thinking, paste inspiration images.
+          </p>
+        </div>
+        {SCREENS.map((screen) => (
+          <ScreenSection
+            key={screen.id}
+            screen={screen}
+            screenData={data.screens[screen.id]}
+            onBrainstormSave={(brainstorm) =>
+              persist({
+                ...data,
+                screens: {
+                  ...data.screens,
+                  [screen.id]: { ...data.screens[screen.id], brainstorm },
+                },
+              })
+            }
+            onAddImage={(image) =>
+              persist({
+                ...data,
+                screens: {
+                  ...data.screens,
+                  [screen.id]: {
+                    ...data.screens[screen.id],
+                    images: [...(data.screens[screen.id].images || []), image],
+                  },
+                },
+              })
+            }
+            onDeleteImage={(id) =>
+              persist({
+                ...data,
+                screens: {
+                  ...data.screens,
+                  [screen.id]: {
+                    ...data.screens[screen.id],
+                    images: data.screens[screen.id].images.filter((i) => i.id !== id),
+                  },
+                },
+              })
+            }
           />
-        )}
-        {view === "checklist" && (
-          <ChecklistView
-            items={data.checklist}
-            onAdd={addChecklistItem}
-            onToggle={toggleChecklistItem}
-            onDelete={deleteChecklistItem}
-            onReset={resetChecklist}
-          />
-        )}
-        {view === "notes" && <NotesView notes={data.globalNotes} onChange={updateGlobalNotes} />}
+        ))}
+        <div style={styles.footer}>
+          <SparklesIcon size={14} color="#7A6E5A" />
+          <span>end of the road · keep shipping</span>
+        </div>
       </main>
     </div>
+  );
+}
+
+function Sidebar({ activeSection, onNavigate, storageSize }) {
+  const sizePercent = Math.min(100, (storageSize / (5 * 1024 * 1024)) * 100);
+  return (
+    <aside style={styles.sidebar} className="sidebar">
+      <div style={styles.logoWrap}>
+        <div style={styles.logoBadge}>
+          <SparklesIcon size={18} color="#FFF8EF" />
+        </div>
+        <div>
+          <div style={styles.logoTitle}>control room</div>
+          <div style={styles.logoSub}>app progress tracker</div>
+        </div>
+      </div>
+
+      <NavSection title="top of page">
+        <NavItem active={activeSection === "checklist"} onClick={() => onNavigate("checklist")}
+          icon={<ListChecksIcon size={14} />} label="Expo Checklist" />
+        <NavItem active={activeSection === "excalidraw"} onClick={() => onNavigate("excalidraw")}
+          icon={<LinkIcon size={14} />} label="Excalidraw" />
+        <NavItem active={activeSection === "notes"} onClick={() => onNavigate("notes")}
+          icon={<StickyNoteIcon size={14} />} label="Global Notes" />
+        <NavItem active={activeSection === "prompts"} onClick={() => onNavigate("prompts")}
+          icon={<WandIcon size={14} />} label="Prompts Used" />
+      </NavSection>
+
+      <NavSection title="screens">
+        {SCREENS.map((s) => (
+          <NavItem
+            key={s.id}
+            active={activeSection === s.id}
+            onClick={() => onNavigate(s.id)}
+            icon={<span style={{ fontSize: 13 }}>{s.emoji}</span>}
+            label={s.label}
+          />
+        ))}
+      </NavSection>
+
+      <div style={styles.sidebarFooter}>
+        <div style={styles.storageLabel}>
+          <span>browser storage</span>
+          <span>{formatBytes(storageSize)}</span>
+        </div>
+        <div style={styles.storageBar}>
+          <div style={{
+            ...styles.storageFill,
+            width: `${sizePercent}%`,
+            background: sizePercent > 80 ? "#EF4444" : sizePercent > 60 ? "#F59E0B" : "#10B981",
+          }} />
+        </div>
+        <div style={styles.sidebarFooterText}>
+          saved in this browser<br />
+          <span style={{ opacity: 0.6 }}>per-device · local only</span>
+        </div>
+      </div>
+    </aside>
   );
 }
 
@@ -304,420 +386,67 @@ function NavSection({ title, children }) {
   );
 }
 
-function NavItem({ active, onClick, icon, label, badge }) {
+function NavItem({ active, onClick, icon, label }) {
   return (
     <button
       onClick={onClick}
       className={active ? "" : "nav-item-hover"}
-      style={{
-        ...styles.navItem,
-        ...(active ? styles.navItemActive : {}),
-      }}
+      style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
     >
       <span style={styles.navItemIcon}>{icon}</span>
       <span style={styles.navItemLabel}>{label}</span>
-      {badge != null && <span style={styles.navBadge}>{badge}</span>}
     </button>
   );
 }
 
-function Dashboard({ data, setView }) {
-  const totalOpen = SCREENS.reduce(
-    (sum, s) => sum + data.screens[s.id].problems.filter((p) => p.status !== "done").length,
-    0
-  );
-  const totalDone = SCREENS.reduce(
-    (sum, s) => sum + data.screens[s.id].problems.filter((p) => p.status === "done").length,
-    0
-  );
-  const totalBlocked = SCREENS.reduce(
-    (sum, s) => sum + data.screens[s.id].problems.filter((p) => p.status === "blocked").length,
-    0
-  );
-
+function SectionHeader({ eyebrow, title, subtitle, sticker, stickerIcon }) {
   return (
-    <div style={styles.page}>
-      <div style={styles.pageHeader}>
-        <div>
-          <div style={styles.eyebrow}>overview</div>
-          <h1 style={styles.pageTitle} className="page-title">
-            let's ship this thing<span style={styles.titleAccent}>.</span>
-          </h1>
-          <p style={styles.pageSub}>
-            A snapshot of where you are. Click any card to dive in.
-          </p>
-        </div>
+    <div style={styles.sectionHeaderWrap}>
+      <div>
+        {eyebrow && <div style={styles.eyebrow}>{eyebrow}</div>}
+        {title && <h2 style={styles.sectionTitle} className="page-title">{title}</h2>}
+        {subtitle && <p style={styles.pageSub}>{subtitle}</p>}
+      </div>
+      {sticker && (
         <div style={styles.headerSticker}>
-          <FlameIcon size={14} color="#E85D4E" />
-          <span>in progress</span>
+          {stickerIcon}<span>{sticker}</span>
         </div>
-      </div>
-
-      <div style={styles.statGrid}>
-        <StatCard label="Open" value={totalOpen} color="#F59E0B" />
-        <StatCard label="Done" value={totalDone} color="#10B981" />
-        <StatCard label="Blocked" value={totalBlocked} color="#EF4444" />
-      </div>
-
-      <h2 style={styles.sectionHeader}>Screens</h2>
-      <div style={styles.screenGrid}>
-        {SCREENS.map((s) => {
-          const sd = data.screens[s.id];
-          const open = sd.problems.filter((p) => p.status !== "done").length;
-          const done = sd.problems.filter((p) => p.status === "done").length;
-          const blocked = sd.problems.filter((p) => p.status === "blocked").length;
-          const total = sd.problems.length;
-          const pct = total === 0 ? 0 : Math.round((done / total) * 100);
-          return (
-            <button
-              key={s.id}
-              onClick={() => setView(s.id)}
-              style={styles.screenCard}
-              className="screen-card"
-            >
-              <div style={styles.screenCardTop}>
-                <span style={{ fontSize: 28 }}>{s.emoji}</span>
-                {blocked > 0 && <span style={styles.blockedChip}>{blocked} blocked</span>}
-              </div>
-              <div style={styles.screenCardTitle}>{s.label}</div>
-              <div style={styles.screenCardMeta}>
-                {open} open · {done} done
-              </div>
-              <div style={styles.progressBar}>
-                <div
-                  style={{
-                    ...styles.progressFill,
-                    width: `${pct}%`,
-                  }}
-                />
-              </div>
-              <div style={styles.screenCardPct}>{pct}%</div>
-            </button>
-          );
-        })}
-      </div>
+      )}
     </div>
   );
 }
 
-function StatCard({ label, value, color }) {
-  return (
-    <div style={styles.statCard}>
-      <div style={{ ...styles.statDot, background: color }} />
-      <div style={styles.statValue}>{value}</div>
-      <div style={styles.statLabel}>{label}</div>
-    </div>
-  );
-}
-
-function ScreenView({
-  screen,
-  screenData,
-  onAddProblem,
-  onUpdateProblem,
-  onDeleteProblem,
-  onUpdateNotes,
-  onUpdateExcalidraw,
-  filter,
-  setFilter,
-}) {
-  const [newProblem, setNewProblem] = useState("");
-  const [editingUrl, setEditingUrl] = useState(false);
-  const [urlDraft, setUrlDraft] = useState(screenData.excalidrawUrl || "");
-
-  useEffect(() => {
-    setUrlDraft(screenData.excalidrawUrl || "");
-    setEditingUrl(false);
-  }, [screen.id]);
-
-  const handleAdd = () => {
-    onAddProblem(newProblem);
-    setNewProblem("");
-  };
-
-  const filtered = screenData.problems.filter((p) => {
-    if (filter === "all") return true;
-    return p.status === filter;
-  });
-
-  const counts = {
-    all: screenData.problems.length,
-    todo: screenData.problems.filter((p) => p.status === "todo").length,
-    "in-progress": screenData.problems.filter((p) => p.status === "in-progress").length,
-    done: screenData.problems.filter((p) => p.status === "done").length,
-    blocked: screenData.problems.filter((p) => p.status === "blocked").length,
-  };
-
-  return (
-    <div style={styles.page}>
-      <div style={styles.pageHeader}>
-        <div>
-          <div style={styles.eyebrow}>screen</div>
-          <h1 style={styles.pageTitle} className="page-title">
-            {screen.emoji} {screen.label}
-          </h1>
-        </div>
-      </div>
-
-      <div style={styles.excalidrawCard}>
-        <div style={styles.excalidrawLabel}>moodboard / inspiration</div>
-        {editingUrl || !screenData.excalidrawUrl ? (
-          <div style={styles.excalidrawEditRow}>
-            <input
-              value={urlDraft}
-              onChange={(e) => setUrlDraft(e.target.value)}
-              placeholder="paste your excalidraw link..."
-              style={{ ...styles.textInput, flex: 1, minWidth: 200 }}
-            />
-            <button
-              style={styles.primaryBtn}
-              onClick={() => {
-                onUpdateExcalidraw(urlDraft.trim());
-                setEditingUrl(false);
-              }}
-            >
-              save
-            </button>
-            {screenData.excalidrawUrl && (
-              <button style={styles.ghostBtn} onClick={() => setEditingUrl(false)}>
-                cancel
-              </button>
-            )}
-          </div>
-        ) : (
-          <div style={styles.excalidrawViewRow}>
-            <a
-              href={screenData.excalidrawUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={styles.excalidrawLink}
-            >
-              <ExternalLinkIcon size={14} />
-              open moodboard
-            </a>
-            <span style={styles.excalidrawUrl}>{screenData.excalidrawUrl}</span>
-            <button
-              style={styles.ghostBtn}
-              onClick={() => {
-                setUrlDraft(screenData.excalidrawUrl);
-                setEditingUrl(true);
-              }}
-            >
-              <Edit3Icon size={12} /> edit
-            </button>
-          </div>
-        )}
-      </div>
-
-      <h2 style={styles.sectionHeader}>Problems & to-dos</h2>
-
-      <div style={styles.addRow}>
-        <input
-          value={newProblem}
-          onChange={(e) => setNewProblem(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          placeholder="what needs fixing?"
-          style={{ ...styles.textInput, flex: 1 }}
-        />
-        <button style={styles.primaryBtn} onClick={handleAdd}>
-          <PlusIcon size={16} /> add
-        </button>
-      </div>
-
-      <div style={styles.filterRow}>
-        {[
-          { v: "all", label: "all" },
-          { v: "todo", label: "to do" },
-          { v: "in-progress", label: "in progress" },
-          { v: "done", label: "done" },
-          { v: "blocked", label: "blocked" },
-        ].map((f) => (
-          <button
-            key={f.v}
-            onClick={() => setFilter(f.v)}
-            style={{
-              ...styles.filterChip,
-              ...(filter === f.v ? styles.filterChipActive : {}),
-            }}
-          >
-            {f.label} <span style={styles.filterCount}>{counts[f.v]}</span>
-          </button>
-        ))}
-      </div>
-
-      <div style={styles.problemList}>
-        {filtered.length === 0 ? (
-          <div style={styles.emptyState}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>✨</div>
-            <div style={{ fontFamily: "Fraunces, serif", fontSize: 20, color: "#2A2A2A" }}>
-              {screenData.problems.length === 0 ? "nothing here yet" : "nothing matches that filter"}
-            </div>
-            <div style={{ color: "#7A6E5A", marginTop: 4 }}>
-              {screenData.problems.length === 0
-                ? "add your first problem above"
-                : "try a different filter"}
-            </div>
-          </div>
-        ) : (
-          filtered.map((p) => (
-            <ProblemRow
-              key={p.id}
-              problem={p}
-              onUpdate={(patch) => onUpdateProblem(p.id, patch)}
-              onDelete={() => onDeleteProblem(p.id)}
-            />
-          ))
-        )}
-      </div>
-
-      <h2 style={styles.sectionHeader}>Notes & direction</h2>
-      <textarea
-        value={screenData.notes}
-        onChange={(e) => onUpdateNotes(e.target.value)}
-        placeholder="decisions, ideas, things you're thinking about for this screen..."
-        style={styles.textarea}
-      />
-    </div>
-  );
-}
-
-function ProblemRow({ problem, onUpdate, onDelete }) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(problem.text);
-  const status = STATUS_OPTIONS.find((s) => s.value === problem.status);
-  const priority = PRIORITY_OPTIONS.find((p) => p.value === problem.priority);
-  const isDone = problem.status === "done";
-
-  return (
-    <div
-      style={{
-        ...styles.problemRow,
-        opacity: isDone ? 0.6 : 1,
-      }}
-    >
-      <div
-        style={{ ...styles.priorityBar, background: priority.color }}
-        title={`priority: ${priority.label}`}
-      />
-      <div style={styles.problemContent}>
-        {editing ? (
-          <input
-            autoFocus
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={() => {
-              if (draft.trim()) onUpdate({ text: draft.trim() });
-              setEditing(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                if (draft.trim()) onUpdate({ text: draft.trim() });
-                setEditing(false);
-              }
-              if (e.key === "Escape") {
-                setDraft(problem.text);
-                setEditing(false);
-              }
-            }}
-            style={{ ...styles.textInput, width: "100%" }}
-          />
-        ) : (
-          <div
-            onClick={() => setEditing(true)}
-            style={{
-              ...styles.problemText,
-              textDecoration: isDone ? "line-through" : "none",
-            }}
-          >
-            {problem.text}
-          </div>
-        )}
-        <div style={styles.problemControls}>
-          <select
-            value={problem.status}
-            onChange={(e) => onUpdate({ status: e.target.value })}
-            style={{
-              ...styles.statusSelect,
-              background: status.bg,
-              color: status.fg,
-              borderColor: status.dot,
-            }}
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
-          <select
-            value={problem.priority}
-            onChange={(e) => onUpdate({ priority: e.target.value })}
-            style={styles.prioritySelect}
-          >
-            {PRIORITY_OPTIONS.map((p) => (
-              <option key={p.value} value={p.value}>{p.label} priority</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <button
-        onClick={onDelete}
-        style={styles.deleteBtn}
-        title="delete"
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "#FEE2E2";
-          e.currentTarget.style.color = "#991B1B";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "transparent";
-          e.currentTarget.style.color = "#94A3B8";
-        }}
-      >
-        <Trash2Icon size={14} />
-      </button>
-    </div>
-  );
-}
-
-function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
+function ChecklistSection({ items, onChange }) {
   const [newItem, setNewItem] = useState("");
   const doneCount = items.filter((i) => i.done).length;
 
   const handleAdd = () => {
-    onAdd(newItem);
+    if (!newItem.trim()) return;
+    onChange([...items, { id: Date.now().toString(), text: newItem.trim(), done: false }]);
     setNewItem("");
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.pageHeader}>
-        <div>
-          <div style={styles.eyebrow}>ritual</div>
-          <h1 style={styles.pageTitle} className="page-title">Expo checklist</h1>
-          <p style={styles.pageSub}>
-            Your steps for spinning things up each session. Add your own, check them off, reset when you're done.
-          </p>
-        </div>
-        {items.length > 0 && (
-          <button style={styles.resetBtn} onClick={onReset}>
-            <RotateCcwIcon size={14} /> reset all
-          </button>
-        )}
-      </div>
+    <section id="checklist" style={styles.section}>
+      <SectionHeader
+        eyebrow="ritual"
+        title="Expo Checklist"
+        subtitle="Your steps for spinning things up each session. Add your own, check them off, reset when you're done."
+        sticker="kickoff"
+        stickerIcon={<ListChecksIcon size={14} color="#E85D4E" />}
+      />
 
       {items.length > 0 && (
         <div style={styles.progressCard}>
           <div style={styles.progressCardTop}>
             <span style={styles.progressCardLabel}>progress</span>
-            <span style={styles.progressCardCount}>
-              {doneCount} / {items.length}
-            </span>
+            <span style={styles.progressCardCount}>{doneCount} / {items.length}</span>
           </div>
           <div style={styles.progressBarLarge}>
-            <div
-              style={{
-                ...styles.progressFillLarge,
-                width: `${items.length === 0 ? 0 : (doneCount / items.length) * 100}%`,
-              }}
-            />
+            <div style={{
+              ...styles.progressFillLarge,
+              width: `${items.length === 0 ? 0 : (doneCount / items.length) * 100}%`,
+            }} />
           </div>
         </div>
       )}
@@ -733,29 +462,32 @@ function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
         <button style={styles.primaryBtn} onClick={handleAdd}>
           <PlusIcon size={16} /> add step
         </button>
+        {items.length > 0 && (
+          <button
+            style={styles.ghostBtn}
+            onClick={() => onChange(items.map((i) => ({ ...i, done: false })))}
+          >
+            <RotateCcwIcon size={13} /> reset all
+          </button>
+        )}
       </div>
 
       <div style={styles.checklistList}>
         {items.length === 0 ? (
           <div style={styles.emptyState}>
             <div style={{ fontSize: 36, marginBottom: 8 }}>📋</div>
-            <div style={{ fontFamily: "Fraunces, serif", fontSize: 20, color: "#2A2A2A" }}>
-              empty checklist
-            </div>
-            <div style={{ color: "#7A6E5A", marginTop: 4 }}>
-              add your first step above
-            </div>
+            <div style={{ fontFamily: "Fraunces, serif", fontSize: 20 }}>empty checklist</div>
+            <div style={{ color: "#7A6E5A", marginTop: 4 }}>add your first step above</div>
           </div>
         ) : (
           items.map((item, idx) => (
             <div key={item.id} style={styles.checklistItem}>
               <span style={styles.checklistNumber}>{idx + 1}</span>
               <button
-                onClick={() => onToggle(item.id)}
-                style={{
-                  ...styles.checkbox,
-                  ...(item.done ? styles.checkboxDone : {}),
-                }}
+                onClick={() =>
+                  onChange(items.map((i) => i.id === item.id ? { ...i, done: !i.done } : i))
+                }
+                style={{ ...styles.checkbox, ...(item.done ? styles.checkboxDone : {}) }}
               >
                 {item.done && <CheckIcon size={14} color="#FFF8EF" strokeWidth={3} />}
               </button>
@@ -769,16 +501,9 @@ function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
                 {item.text}
               </span>
               <button
-                onClick={() => onDelete(item.id)}
-                style={styles.deleteBtn}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#FEE2E2";
-                  e.currentTarget.style.color = "#991B1B";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "#94A3B8";
-                }}
+                onClick={() => onChange(items.filter((i) => i.id !== item.id))}
+                style={styles.iconBtn}
+                title="delete"
               >
                 <XIcon size={14} />
               </button>
@@ -786,28 +511,307 @@ function ChecklistView({ items, onAdd, onToggle, onDelete, onReset }) {
           ))
         )}
       </div>
-    </div>
+    </section>
   );
 }
 
-function NotesView({ notes, onChange }) {
+function ExcalidrawSection({ url, onChange }) {
+  const [editing, setEditing] = useState(!url);
+  const [draft, setDraft] = useState(url);
+
+  useEffect(() => {
+    setDraft(url);
+    setEditing(!url);
+  }, [url]);
+
   return (
-    <div style={styles.page}>
-      <div style={styles.pageHeader}>
+    <section id="excalidraw" style={styles.section}>
+      <SectionHeader
+        eyebrow="moodboard"
+        title="Excalidraw Link"
+        subtitle="Your visual workspace. Paste the link once, open with a click anytime."
+        sticker="canvas"
+        stickerIcon={<LinkIcon size={14} color="#E85D4E" />}
+      />
+
+      <div style={styles.excalidrawCard}>
+        {editing || !url ? (
+          <div style={styles.excalidrawEditRow}>
+            <input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder="https://excalidraw.com/#room=..."
+              style={{ ...styles.textInput, flex: 1, minWidth: 200 }}
+            />
+            <button
+              style={styles.primaryBtn}
+              onClick={() => { onChange(draft.trim()); setEditing(false); }}
+            >
+              <SaveIcon size={14} /> save
+            </button>
+            {url && (
+              <button style={styles.ghostBtn} onClick={() => { setDraft(url); setEditing(false); }}>
+                cancel
+              </button>
+            )}
+          </div>
+        ) : (
+          <div style={styles.excalidrawViewRow}>
+            <a href={url} target="_blank" rel="noopener noreferrer" style={styles.excalidrawLink}>
+              <ExternalLinkIcon size={14} /> open excalidraw
+            </a>
+            <span style={styles.excalidrawUrl}>{url}</span>
+            <button style={styles.ghostBtn} onClick={() => setEditing(true)}>
+              <Edit3Icon size={12} /> edit
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function LockableTextSection({ id, eyebrow, title, subtitle, icon, stickerText, placeholder, value, onSave, minHeight = 180, mono = false }) {
+  const [editing, setEditing] = useState(!value);
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const handleSave = () => {
+    onSave(draft);
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setDraft(value);
+    setEditing(false);
+  };
+
+  const dirty = draft !== value;
+  const hasHeader = !!title || !!eyebrow;
+
+  return (
+    <section id={id} style={styles.section}>
+      {hasHeader && (
+        <SectionHeader
+          eyebrow={eyebrow}
+          title={title}
+          subtitle={subtitle}
+          sticker={stickerText}
+          stickerIcon={icon}
+        />
+      )}
+
+      {editing ? (
+        <>
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={placeholder}
+            style={{
+              ...styles.textarea,
+              minHeight,
+              fontFamily: mono ? "'JetBrains Mono', monospace" : "'DM Sans', sans-serif",
+              fontSize: mono ? 13 : 15,
+            }}
+          />
+          <div style={styles.editActions}>
+            <button style={styles.primaryBtn} onClick={handleSave}>
+              <SaveIcon size={14} /> save
+            </button>
+            {value && (
+              <button style={styles.ghostBtn} onClick={handleCancel}>cancel</button>
+            )}
+            {dirty && <span style={styles.dirtyHint}>unsaved changes</span>}
+          </div>
+        </>
+      ) : (
+        <div style={styles.lockedWrap}>
+          <div style={styles.lockedBanner}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <LockIcon size={12} />
+              <span>locked · click edit to change</span>
+            </div>
+            <button style={styles.editBtn} onClick={() => { setDraft(value); setEditing(true); }}>
+              <Edit3Icon size={12} /> edit
+            </button>
+          </div>
+          <div
+            style={{
+              ...styles.lockedContent,
+              minHeight,
+              fontFamily: mono ? "'JetBrains Mono', monospace" : "'DM Sans', sans-serif",
+              fontSize: mono ? 13 : 15,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {value || <span style={{ color: "#A99D85", fontStyle: "italic" }}>nothing written yet</span>}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function ScreenSection({ screen, screenData, onBrainstormSave, onAddImage, onDeleteImage }) {
+  return (
+    <section id={screen.id} style={styles.screenSection}>
+      <div style={styles.screenHeader}>
+        <span style={{ fontSize: 36 }}>{screen.emoji}</span>
         <div>
-          <div style={styles.eyebrow}>scratch pad</div>
-          <h1 style={styles.pageTitle} className="page-title">Global notes</h1>
-          <p style={styles.pageSub}>
-            Big-picture stuff. Things that don't fit under a single screen.
-          </p>
+          <div style={styles.eyebrow}>screen</div>
+          <h2 style={styles.screenTitleText}>{screen.label}</h2>
         </div>
       </div>
-      <textarea
-        value={notes}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="overall architecture thoughts, naming decisions, feature ideas for later, whatever..."
-        style={{ ...styles.textarea, minHeight: 500 }}
+
+      <LockableTextSection
+        id={`${screen.id}-brainstorm`}
+        placeholder={`what are you thinking about for the ${screen.label.toLowerCase()}?\nlayout ideas, features, problems, anything...`}
+        value={screenData.brainstorm}
+        onSave={onBrainstormSave}
+        minHeight={160}
       />
+
+      <ImageGallery
+        images={screenData.images || []}
+        onAdd={onAddImage}
+        onDelete={onDeleteImage}
+      />
+    </section>
+  );
+}
+
+function ImageGallery({ images, onAdd, onDelete }) {
+  const [focused, setFocused] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    let found = false;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        found = true;
+        const file = item.getAsFile();
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const image = {
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+            data: ev.target.result,
+            type: file.type,
+            addedAt: Date.now(),
+          };
+          try {
+            onAdd(image);
+            setFeedback({ type: "success", text: "image added" });
+          } catch (err) {
+            setFeedback({ type: "error", text: "couldn't save — storage full?" });
+          }
+          setTimeout(() => setFeedback(null), 2500);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+    if (!found) {
+      setFeedback({ type: "error", text: "no image in clipboard" });
+      setTimeout(() => setFeedback(null), 2500);
+    }
+  };
+
+  const handleUpload = (e) => {
+    const files = Array.from(e.target.files || []);
+    files.forEach((file) => {
+      if (!file.type.startsWith("image/")) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const image = {
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+          data: ev.target.result,
+          type: file.type,
+          addedAt: Date.now(),
+        };
+        onAdd(image);
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
+  return (
+    <div style={styles.gallerySection}>
+      <div style={styles.galleryHeader}>
+        <div style={styles.galleryTitle}>
+          <ImageIcon size={14} />
+          <span>inspiration · iterations</span>
+          {images.length > 0 && <span style={styles.galleryCount}>{images.length}</span>}
+        </div>
+        <label style={styles.uploadBtn}>
+          <PlusIcon size={12} /> upload
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleUpload}
+            style={{ display: "none" }}
+          />
+        </label>
+      </div>
+
+      <div
+        tabIndex={0}
+        onPaste={handlePaste}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className={focused ? "paste-zone-focus" : ""}
+        style={styles.pasteZone}
+      >
+        <div style={styles.pasteZoneInner}>
+          {focused ? (
+            <>
+              <div style={{ fontFamily: "Fraunces, serif", fontSize: 18, fontWeight: 600 }}>
+                ready to paste ✨
+              </div>
+              <div style={styles.pasteHint}>Cmd/Ctrl + V to drop an image here</div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontFamily: "Fraunces, serif", fontSize: 18, fontWeight: 600 }}>
+                click here, then paste an image
+              </div>
+              <div style={styles.pasteHint}>or use the upload button above</div>
+            </>
+          )}
+          {feedback && (
+            <div style={{
+              ...styles.feedback,
+              background: feedback.type === "success" ? "#D1FAE5" : "#FEE2E2",
+              color: feedback.type === "success" ? "#065F46" : "#991B1B",
+            }}>
+              {feedback.text}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {images.length > 0 && (
+        <div style={styles.imageGrid}>
+          {images.map((img) => (
+            <div key={img.id} style={styles.imgCard} className="img-card">
+              <img src={img.data} alt="" style={styles.img} />
+              <button
+                onClick={() => onDelete(img.id)}
+                style={styles.imgDelete}
+                className="img-delete"
+                title="delete"
+              >
+                <Trash2Icon size={12} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -823,507 +827,274 @@ const styles = {
       "radial-gradient(circle at 20% 20%, rgba(232, 93, 78, 0.06) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(247, 183, 49, 0.08) 0%, transparent 40%)",
   },
   loadingWrap: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
     background: "#FAF3E3",
   },
   loadingInner: { display: "flex", gap: 12, alignItems: "center" },
   sidebar: {
-    width: 260,
-    background: "#FFF8EF",
-    borderRight: "2px solid #2A2A2A",
-    padding: "24px 16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-    position: "sticky",
-    top: 0,
-    height: "100vh",
-    flexShrink: 0,
+    width: 260, background: "#FFF8EF", borderRight: "2px solid #2A2A2A",
+    padding: "24px 16px", display: "flex", flexDirection: "column", gap: 20,
+    position: "sticky", top: 0, height: "100vh", flexShrink: 0, overflowY: "auto",
   },
   logoWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "0 8px 16px 8px",
-    borderBottom: "1px dashed #D4C4A8",
+    display: "flex", alignItems: "center", gap: 10,
+    padding: "0 8px 16px 8px", borderBottom: "1px dashed #D4C4A8",
   },
   logoBadge: {
-    width: 36,
-    height: 36,
-    background: "#E85D4E",
-    borderRadius: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    transform: "rotate(-6deg)",
-    boxShadow: "2px 2px 0 #2A2A2A",
+    width: 36, height: 36, background: "#E85D4E", borderRadius: 10,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    transform: "rotate(-6deg)", boxShadow: "2px 2px 0 #2A2A2A",
   },
   logoTitle: {
-    fontFamily: "Fraunces, serif",
-    fontWeight: 800,
-    fontSize: 18,
-    letterSpacing: "-0.02em",
-    color: "#2A2A2A",
+    fontFamily: "Fraunces, serif", fontWeight: 800, fontSize: 18,
+    letterSpacing: "-0.02em", color: "#2A2A2A",
   },
   logoSub: { fontSize: 10, color: "#7A6E5A", textTransform: "uppercase", letterSpacing: "0.08em" },
   navSection: { display: "flex", flexDirection: "column", gap: 2 },
   navSectionTitle: {
-    fontSize: 10,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.12em",
-    color: "#7A6E5A",
-    padding: "0 12px 6px 12px",
-    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em",
+    color: "#7A6E5A", padding: "0 12px 6px 12px", fontFamily: "'JetBrains Mono', monospace",
   },
   navItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "9px 12px",
-    borderRadius: 8,
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    color: "#2A2A2A",
-    fontSize: 14,
-    fontWeight: 500,
-    textAlign: "left",
-    width: "100%",
+    display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
+    borderRadius: 8, background: "transparent", border: "none", cursor: "pointer",
+    color: "#2A2A2A", fontSize: 14, fontWeight: 500, textAlign: "left", width: "100%",
     transition: "background 0.15s",
   },
-  navItemActive: {
-    background: "#2A2A2A",
-    color: "#FFF8EF",
-  },
+  navItemActive: { background: "#2A2A2A", color: "#FFF8EF" },
   navItemIcon: { display: "flex", alignItems: "center", justifyContent: "center", width: 18 },
   navItemLabel: { flex: 1 },
-  navBadge: {
-    background: "#E85D4E",
-    color: "#FFF8EF",
-    fontSize: 11,
-    fontWeight: 700,
-    padding: "2px 7px",
-    borderRadius: 10,
-    fontFamily: "'JetBrains Mono', monospace",
+  sidebarFooter: { marginTop: "auto", padding: "12px", borderTop: "1px dashed #D4C4A8" },
+  storageLabel: {
+    display: "flex", justifyContent: "space-between", fontSize: 10,
+    fontFamily: "'JetBrains Mono', monospace", color: "#7A6E5A",
+    textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4,
   },
-  sidebarFooter: {
-    marginTop: "auto",
-    padding: "12px",
-    borderTop: "1px dashed #D4C4A8",
-  },
-  sidebarFooterInner: {
-    fontSize: 10,
-    color: "#7A6E5A",
-    lineHeight: 1.5,
-    fontFamily: "'JetBrains Mono', monospace",
+  storageBar: { height: 4, background: "#F0E4CC", borderRadius: 2, overflow: "hidden" },
+  storageFill: { height: "100%", transition: "width 0.3s" },
+  sidebarFooterText: {
+    fontSize: 10, color: "#7A6E5A", lineHeight: 1.5,
+    fontFamily: "'JetBrains Mono', monospace", marginTop: 10,
   },
   main: {
-    flex: 1,
-    padding: "40px 48px 80px 48px",
-    maxWidth: 1000,
+    flex: 1, padding: "40px 48px 80px 48px", maxWidth: 1000,
+    display: "flex", flexDirection: "column", gap: 56,
   },
-  page: { display: "flex", flexDirection: "column", gap: 24 },
-  pageHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 20,
-    marginBottom: 8,
-    flexWrap: "wrap",
+  section: { display: "flex", flexDirection: "column", gap: 18, scrollMarginTop: 20 },
+  screenSection: {
+    display: "flex", flexDirection: "column", gap: 18, scrollMarginTop: 20,
+    padding: "28px 28px 28px 28px",
+    background: "#FFF8EF",
+    border: "2px solid #2A2A2A", borderRadius: 18,
+    boxShadow: "4px 4px 0 #2A2A2A",
+  },
+  screensHeader: {
+    padding: "20px 0 0 0",
+    borderTop: "2px dashed #D4C4A8",
+  },
+  screenHeader: { display: "flex", alignItems: "center", gap: 14, marginBottom: 4 },
+  screenTitleText: {
+    fontFamily: "Fraunces, serif", fontSize: 32, fontWeight: 800,
+    letterSpacing: "-0.03em", margin: 0, lineHeight: 1.05,
+  },
+  sectionHeaderWrap: {
+    display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+    gap: 20, flexWrap: "wrap",
   },
   eyebrow: {
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.15em",
-    color: "#E85D4E",
-    fontFamily: "'JetBrains Mono', monospace",
-    marginBottom: 8,
+    fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.15em",
+    color: "#E85D4E", fontFamily: "'JetBrains Mono', monospace", marginBottom: 8,
   },
-  pageTitle: {
-    fontFamily: "Fraunces, serif",
-    fontSize: 44,
-    fontWeight: 800,
-    letterSpacing: "-0.03em",
-    margin: 0,
-    lineHeight: 1.05,
-    color: "#2A2A2A",
+  sectionTitle: {
+    fontFamily: "Fraunces, serif", fontSize: 36, fontWeight: 800,
+    letterSpacing: "-0.03em", margin: 0, lineHeight: 1.05, color: "#2A2A2A",
   },
-  titleAccent: { color: "#E85D4E" },
-  pageSub: { color: "#7A6E5A", marginTop: 8, fontSize: 15, maxWidth: 520 },
+  bigSectionTitle: {
+    fontFamily: "Fraunces, serif", fontSize: 44, fontWeight: 800,
+    letterSpacing: "-0.03em", margin: "0 0 8px 0", lineHeight: 1.05, color: "#2A2A2A",
+  },
+  pageSub: { color: "#7A6E5A", marginTop: 8, fontSize: 14, maxWidth: 560 },
   headerSticker: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "6px 12px",
-    background: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 20,
-    fontSize: 12,
-    fontWeight: 600,
-    transform: "rotate(2deg)",
-    boxShadow: "2px 2px 0 #2A2A2A",
-    fontFamily: "'JetBrains Mono', monospace",
+    display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px",
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 20,
+    fontSize: 12, fontWeight: 600, transform: "rotate(2deg)",
+    boxShadow: "2px 2px 0 #2A2A2A", fontFamily: "'JetBrains Mono', monospace",
   },
-  sectionHeader: {
-    fontFamily: "Fraunces, serif",
-    fontSize: 22,
-    fontWeight: 700,
-    margin: "16px 0 0 0",
-    letterSpacing: "-0.02em",
-  },
-  statGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-    gap: 14,
-  },
-  statCard: {
-    background: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 14,
-    padding: "18px 20px",
-    position: "relative",
-    boxShadow: "3px 3px 0 #2A2A2A",
-  },
-  statDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    position: "absolute",
-    top: 18,
-    right: 18,
-  },
-  statValue: {
-    fontFamily: "Fraunces, serif",
-    fontSize: 42,
-    fontWeight: 800,
-    lineHeight: 1,
-    letterSpacing: "-0.03em",
-  },
-  statLabel: {
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.12em",
-    color: "#7A6E5A",
-    marginTop: 6,
-    fontFamily: "'JetBrains Mono', monospace",
-  },
-  screenGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-    gap: 14,
-  },
-  screenCard: {
-    background: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 14,
-    padding: 18,
-    cursor: "pointer",
-    textAlign: "left",
-    boxShadow: "3px 3px 0 #2A2A2A",
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
+  addRow: { display: "flex", gap: 8, flexWrap: "wrap" },
+  textInput: {
+    padding: "10px 14px", border: "2px solid #2A2A2A", borderRadius: 8,
+    fontSize: 14, background: "#FFF8EF", color: "#2A2A2A",
     fontFamily: "'DM Sans', sans-serif",
-    color: "#2A2A2A",
   },
-  screenCardTop: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
+  primaryBtn: {
+    padding: "10px 16px", background: "#E85D4E", color: "#FFF8EF",
+    border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 14,
+    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
+    boxShadow: "2px 2px 0 #2A2A2A",
   },
-  blockedChip: {
-    fontSize: 10,
-    fontWeight: 700,
-    padding: "3px 8px",
-    background: "#FEE2E2",
-    color: "#991B1B",
-    borderRadius: 10,
+  ghostBtn: {
+    padding: "8px 12px", background: "transparent", color: "#2A2A2A",
+    border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 13,
+    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
+  },
+  editBtn: {
+    padding: "6px 12px", background: "#2A2A2A", color: "#FFF8EF",
+    border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12,
+    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
+  },
+  iconBtn: {
+    padding: 8, background: "transparent", border: "none",
+    color: "#94A3B8", cursor: "pointer", display: "flex", alignItems: "center",
+    borderRadius: 6,
+  },
+  checklistList: { display: "flex", flexDirection: "column", gap: 8 },
+  checklistItem: {
+    display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 10,
+    boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  checklistNumber: {
+    fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700,
+    color: "#7A6E5A", width: 20,
+  },
+  checkbox: {
+    width: 22, height: 22, border: "2px solid #2A2A2A", borderRadius: 6,
+    background: "#FAF3E3", cursor: "pointer", display: "flex",
+    alignItems: "center", justifyContent: "center", flexShrink: 0,
+  },
+  checkboxDone: { background: "#E85D4E" },
+  checklistText: { flex: 1, fontSize: 15, lineHeight: 1.4 },
+  emptyState: {
+    textAlign: "center", padding: "48px 20px", background: "#FFF8EF",
+    border: "2px dashed #D4C4A8", borderRadius: 12,
+  },
+  progressCard: {
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 12,
+    padding: "14px 18px", boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  progressCardTop: {
+    display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8,
+  },
+  progressCardLabel: {
+    fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+    letterSpacing: "0.12em", color: "#7A6E5A",
     fontFamily: "'JetBrains Mono', monospace",
   },
-  screenCardTitle: {
-    fontFamily: "Fraunces, serif",
-    fontWeight: 700,
-    fontSize: 20,
-    letterSpacing: "-0.02em",
+  progressCardCount: { fontFamily: "'JetBrains Mono', monospace", fontSize: 13, fontWeight: 700 },
+  progressBarLarge: {
+    width: "100%", height: 10, background: "#F0E4CC", borderRadius: 5, overflow: "hidden",
   },
-  screenCardMeta: { fontSize: 12, color: "#7A6E5A", fontFamily: "'JetBrains Mono', monospace" },
-  progressBar: {
-    width: "100%",
-    height: 6,
-    background: "#F0E4CC",
-    borderRadius: 3,
-    overflow: "hidden",
-    marginTop: 6,
-  },
-  progressFill: {
-    height: "100%",
-    background: "linear-gradient(90deg, #E85D4E, #F7B731)",
+  progressFillLarge: {
+    height: "100%", background: "linear-gradient(90deg, #E85D4E, #F7B731)",
     transition: "width 0.3s",
   },
-  screenCardPct: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#7A6E5A",
-    fontFamily: "'JetBrains Mono', monospace",
-    alignSelf: "flex-end",
-  },
   excalidrawCard: {
-    background: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 14,
-    padding: "16px 18px",
-    boxShadow: "3px 3px 0 #2A2A2A",
-  },
-  excalidrawLabel: {
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.12em",
-    color: "#7A6E5A",
-    marginBottom: 10,
-    fontFamily: "'JetBrains Mono', monospace",
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 14,
+    padding: "16px 18px", boxShadow: "3px 3px 0 #2A2A2A",
   },
   excalidrawEditRow: { display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" },
   excalidrawViewRow: { display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" },
   excalidrawLink: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    padding: "6px 12px",
-    background: "#2A2A2A",
-    color: "#FFF8EF",
-    borderRadius: 8,
-    textDecoration: "none",
-    fontSize: 13,
-    fontWeight: 600,
+    display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px",
+    background: "#2A2A2A", color: "#FFF8EF", borderRadius: 8,
+    textDecoration: "none", fontSize: 13, fontWeight: 600,
   },
   excalidrawUrl: {
-    flex: 1,
-    fontSize: 12,
-    color: "#7A6E5A",
+    flex: 1, fontSize: 12, color: "#7A6E5A",
     fontFamily: "'JetBrains Mono', monospace",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    minWidth: 0,
-  },
-  addRow: { display: "flex", gap: 8, flexWrap: "wrap" },
-  textInput: {
-    padding: "10px 14px",
-    border: "2px solid #2A2A2A",
-    borderRadius: 8,
-    fontSize: 14,
-    background: "#FFF8EF",
-    color: "#2A2A2A",
-    fontFamily: "'DM Sans', sans-serif",
-  },
-  primaryBtn: {
-    padding: "10px 16px",
-    background: "#E85D4E",
-    color: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 8,
-    fontWeight: 600,
-    fontSize: 14,
-    cursor: "pointer",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  ghostBtn: {
-    padding: "8px 12px",
-    background: "transparent",
-    color: "#2A2A2A",
-    border: "2px solid #2A2A2A",
-    borderRadius: 8,
-    fontWeight: 600,
-    fontSize: 13,
-    cursor: "pointer",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 4,
-  },
-  resetBtn: {
-    padding: "8px 14px",
-    background: "#FFF8EF",
-    color: "#2A2A2A",
-    border: "2px solid #2A2A2A",
-    borderRadius: 8,
-    fontWeight: 600,
-    fontSize: 13,
-    cursor: "pointer",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  filterRow: { display: "flex", gap: 8, flexWrap: "wrap" },
-  filterChip: {
-    padding: "6px 12px",
-    borderRadius: 20,
-    border: "2px solid #2A2A2A",
-    background: "#FFF8EF",
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: "pointer",
-    display: "inline-flex",
-    alignItems: "center",
-    gap: 6,
-    color: "#2A2A2A",
-  },
-  filterChipActive: {
-    background: "#2A2A2A",
-    color: "#FFF8EF",
-  },
-  filterCount: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: 10,
-    opacity: 0.7,
-  },
-  problemList: { display: "flex", flexDirection: "column", gap: 10 },
-  problemRow: {
-    display: "flex",
-    background: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 12,
-    overflow: "hidden",
-    boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  priorityBar: { width: 6, flexShrink: 0 },
-  problemContent: { flex: 1, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 },
-  problemText: { fontSize: 15, lineHeight: 1.4, cursor: "text", wordBreak: "break-word" },
-  problemControls: { display: "flex", gap: 8, flexWrap: "wrap" },
-  statusSelect: {
-    padding: "4px 10px",
-    borderRadius: 14,
-    border: "1.5px solid",
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: "pointer",
-    appearance: "none",
-    backgroundImage: "none",
-  },
-  prioritySelect: {
-    padding: "4px 10px",
-    borderRadius: 14,
-    border: "1.5px solid #D4C4A8",
-    background: "#FAF3E3",
-    fontSize: 12,
-    fontWeight: 600,
-    cursor: "pointer",
-    color: "#2A2A2A",
-  },
-  deleteBtn: {
-    padding: 10,
-    background: "transparent",
-    border: "none",
-    color: "#94A3B8",
-    cursor: "pointer",
-    alignSelf: "flex-start",
-    display: "flex",
-    alignItems: "center",
-    borderRadius: 6,
-    transition: "background 0.15s, color 0.15s",
-  },
-  emptyState: {
-    textAlign: "center",
-    padding: "48px 20px",
-    background: "#FFF8EF",
-    border: "2px dashed #D4C4A8",
-    borderRadius: 12,
+    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0,
   },
   textarea: {
-    width: "100%",
-    minHeight: 180,
-    padding: 16,
-    border: "2px solid #2A2A2A",
-    borderRadius: 12,
-    background: "#FFF8EF",
-    fontSize: 15,
-    lineHeight: 1.6,
-    fontFamily: "'DM Sans', sans-serif",
-    color: "#2A2A2A",
+    width: "100%", padding: 16, border: "2px solid #2A2A2A", borderRadius: 12,
+    background: "#FFF8EF", lineHeight: 1.6, color: "#2A2A2A",
     boxShadow: "2px 2px 0 #2A2A2A",
   },
-  checklistList: { display: "flex", flexDirection: "column", gap: 8 },
-  checklistItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "12px 16px",
-    background: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 10,
+  editActions: {
+    display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap",
+  },
+  dirtyHint: {
+    fontSize: 11, color: "#E85D4E", fontFamily: "'JetBrains Mono', monospace",
+    textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600,
+  },
+  lockedWrap: {
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 12,
+    overflow: "hidden", boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  lockedBanner: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    padding: "8px 14px", background: "#F5ECDE",
+    borderBottom: "1px dashed #D4C4A8",
+    fontSize: 11, color: "#7A6E5A",
+    fontFamily: "'JetBrains Mono', monospace",
+    textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600,
+  },
+  lockedContent: {
+    padding: 16, lineHeight: 1.6, color: "#2A2A2A", wordBreak: "break-word",
+  },
+  gallerySection: { display: "flex", flexDirection: "column", gap: 12 },
+  galleryHeader: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    marginTop: 8,
+  },
+  galleryTitle: {
+    display: "flex", alignItems: "center", gap: 8,
+    fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+    letterSpacing: "0.12em", color: "#7A6E5A",
+    fontFamily: "'JetBrains Mono', monospace",
+  },
+  galleryCount: {
+    background: "#E85D4E", color: "#FFF8EF",
+    padding: "1px 7px", borderRadius: 10, fontSize: 10,
+  },
+  uploadBtn: {
+    padding: "6px 12px", background: "#FFF8EF", color: "#2A2A2A",
+    border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 12,
+    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
     boxShadow: "2px 2px 0 #2A2A2A",
   },
-  checklistNumber: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: 11,
-    fontWeight: 700,
-    color: "#7A6E5A",
-    width: 20,
+  pasteZone: {
+    border: "2px dashed #D4C4A8", borderRadius: 12, padding: "24px 20px",
+    background: "#FAF3E3", cursor: "text", transition: "all 0.15s",
+    outline: "none",
   },
-  checkbox: {
-    width: 22,
-    height: 22,
-    border: "2px solid #2A2A2A",
-    borderRadius: 6,
-    background: "#FAF3E3",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
+  pasteZoneInner: {
+    display: "flex", flexDirection: "column", alignItems: "center",
+    gap: 6, textAlign: "center",
   },
-  checkboxDone: {
-    background: "#E85D4E",
-  },
-  checklistText: { flex: 1, fontSize: 15, lineHeight: 1.4 },
-  progressCard: {
-    background: "#FFF8EF",
-    border: "2px solid #2A2A2A",
-    borderRadius: 12,
-    padding: "14px 18px",
-    boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  progressCardTop: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  progressCardLabel: {
-    fontSize: 11,
-    fontWeight: 600,
-    textTransform: "uppercase",
-    letterSpacing: "0.12em",
-    color: "#7A6E5A",
+  pasteHint: {
+    fontSize: 12, color: "#7A6E5A",
     fontFamily: "'JetBrains Mono', monospace",
   },
-  progressCardCount: {
+  feedback: {
+    marginTop: 10, padding: "4px 12px", borderRadius: 14,
+    fontSize: 12, fontWeight: 600,
     fontFamily: "'JetBrains Mono', monospace",
-    fontSize: 13,
-    fontWeight: 700,
   },
-  progressBarLarge: {
-    width: "100%",
-    height: 10,
-    background: "#F0E4CC",
-    borderRadius: 5,
-    overflow: "hidden",
+  imageGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+    gap: 10,
   },
-  progressFillLarge: {
-    height: "100%",
-    background: "linear-gradient(90deg, #E85D4E, #F7B731)",
-    transition: "width 0.3s",
+  imgCard: {
+    position: "relative", border: "2px solid #2A2A2A",
+    borderRadius: 10, overflow: "hidden", background: "#FFF8EF",
+    boxShadow: "2px 2px 0 #2A2A2A", aspectRatio: "1", display: "flex",
+  },
+  img: { width: "100%", height: "100%", objectFit: "cover" },
+  imgDelete: {
+    position: "absolute", top: 6, right: 6,
+    width: 26, height: 26, borderRadius: 6,
+    background: "#2A2A2A", color: "#FFF8EF",
+    border: "none", cursor: "pointer",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    opacity: 0, transition: "opacity 0.15s",
+  },
+  footer: {
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+    padding: "40px 0", fontSize: 12, color: "#7A6E5A",
+    fontFamily: "'JetBrains Mono', monospace",
+    textTransform: "uppercase", letterSpacing: "0.1em",
+    borderTop: "2px dashed #D4C4A8", marginTop: 20,
   },
 };
 
