@@ -418,7 +418,6 @@ function SectionHeader({ eyebrow, title, subtitle, sticker, stickerIcon }) {
 
 function ChecklistSection({ items, onChange }) {
   const [newItem, setNewItem] = useState("");
-  const doneCount = items.filter((i) => i.done).length;
 
   const handleAdd = () => {
     if (!newItem.trim()) return;
@@ -435,21 +434,6 @@ function ChecklistSection({ items, onChange }) {
         sticker="kickoff"
         stickerIcon={<ListChecksIcon size={14} color="#E85D4E" />}
       />
-
-      {items.length > 0 && (
-        <div style={styles.progressCard}>
-          <div style={styles.progressCardTop}>
-            <span style={styles.progressCardLabel}>progress</span>
-            <span style={styles.progressCardCount}>{doneCount} / {items.length}</span>
-          </div>
-          <div style={styles.progressBarLarge}>
-            <div style={{
-              ...styles.progressFillLarge,
-              width: `${items.length === 0 ? 0 : (doneCount / items.length) * 100}%`,
-            }} />
-          </div>
-        </div>
-      )}
 
       <div style={styles.addRow}>
         <input
@@ -666,18 +650,18 @@ function ScreenSection({ screen, screenData, onBrainstormSave, onAddImage, onDel
         </div>
       </div>
 
+      <ImageGallery
+        images={screenData.images || []}
+        onAdd={onAddImage}
+        onDelete={onDeleteImage}
+      />
+
       <LockableTextSection
         id={`${screen.id}-brainstorm`}
         placeholder={`what are you thinking about for the ${screen.label.toLowerCase()}?\nlayout ideas, features, problems, anything...`}
         value={screenData.brainstorm}
         onSave={onBrainstormSave}
         minHeight={160}
-      />
-
-      <ImageGallery
-        images={screenData.images || []}
-        onAdd={onAddImage}
-        onDelete={onDeleteImage}
       />
     </section>
   );
