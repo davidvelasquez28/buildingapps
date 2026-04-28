@@ -1,1110 +1,906 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Budget</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,700;1,300&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Control Room — App Progress Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #0e0e10;
-    --surface: #17171a;
-    --surface2: #1f1f24;
-    --border: #2e2e36;
-    --accent: #d4f264;
-    --accent2: #6af2b0;
-    --text: #e8e8ec;
-    --muted: #6b6b7a;
-    --red: #ff5c5c;
-    --warn: #f2c76a;
-  }
-
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: #FAF3E3;
+    color: #2A2A2A;
   }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(212,242,100,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(212,242,100,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
+  input, textarea, button, select { font-family: 'DM Sans', system-ui, sans-serif; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid #E85D4E; outline-offset: 2px; }
+  textarea { resize: vertical; }
+  .nav-item-hover:hover { background: #F5ECDE !important; }
+  .jump-chip:hover { background: #2A2A2A !important; color: #FFF8EF !important; }
+  @media (max-width: 768px) {
+    .app-container { flex-direction: column !important; }
+    .sidebar { width: 100% !important; height: auto !important; position: relative !important; border-right: none !important; border-bottom: 2px solid #2A2A2A !important; }
+    .main-content { padding: 24px 20px 60px 20px !important; }
+    .page-title { font-size: 32px !important; }
   }
-
-  .topbar {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 18px 28px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-  }
-  .topbar h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 700;
-    font-size: 1.5rem;
-    color: var(--accent);
-    letter-spacing: -0.5px;
-    white-space: nowrap;
-  }
-  .topbar-sub {
-    font-size: 0.68rem;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-right: auto;
-  }
-  .month-ctrl { display: flex; align-items: center; gap: 8px; }
-  .month-ctrl button {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    padding: 7px 11px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .month-ctrl button:hover { color: var(--accent); border-color: var(--accent); }
-  .month-label {
-    font-size: 0.75rem;
-    color: var(--text);
-    letter-spacing: 0.08em;
-    min-width: 110px;
-    text-align: center;
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 40px 28px 100px;
-  }
-
-  /* ── SECTION HEADER ── */
-  .section { margin-bottom: 44px; }
-  .section-head {
-    display: flex;
-    align-items: baseline;
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-  .section-num {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 1.1rem;
-    color: var(--accent2);
-  }
-  .section-head h2 {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 1.5rem;
-    color: var(--text);
-  }
-  .section-head .rule {
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-  .head-action {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .head-action:hover { color: var(--accent); border-color: var(--accent); }
-
-  /* ── STAT CARDS ── */
-  .stat-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-  }
-  .stat {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 22px 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 130px;
-    animation: fadeUp 0.3s ease both;
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .stat-label {
-    font-size: 0.62rem;
-    color: var(--muted);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .stat-value {
-    font-family: 'Fraunces', serif;
-    font-size: 2.4rem;
-    font-weight: 300;
-    color: var(--text);
-    line-height: 1;
-    letter-spacing: -1px;
-    margin-top: 10px;
-  }
-  .stat-value.positive { color: var(--accent2); }
-  .stat-value.negative { color: var(--red); }
-  .stat-value.warn { color: var(--warn); }
-  .stat.highlight {
-    border-color: rgba(212,242,100,0.3);
-    background: linear-gradient(135deg, var(--surface) 0%, #1a1e15 100%);
-  }
-  .stat.highlight .stat-label { color: var(--accent); }
-
-  /* editable "have" input */
-  .stat-input-wrap { margin-top: 10px; }
-  .stat-input {
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Fraunces', serif;
-    font-size: 2.4rem;
-    font-weight: 300;
-    letter-spacing: -1px;
-    width: 100%;
-    outline: none;
-    line-height: 1;
-    transition: border-color 0.15s;
-  }
-  .stat-input:focus { border-color: var(--accent); }
-  .stat-sub {
-    font-size: 0.62rem;
-    color: var(--muted);
-    margin-top: 6px;
-  }
-
-  /* ── BILLS LIST ── */
-  .bills-list { display: flex; flex-direction: column; gap: 8px; }
-
-  .bill-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
-    display: grid;
-    grid-template-columns: 28px 1fr auto auto;
-    align-items: center;
-    gap: 14px;
-    transition: background 0.15s, opacity 0.2s;
-    animation: fadeUp 0.25s ease both;
-  }
-  .bill-row.paid {
-    opacity: 0.45;
-  }
-  .bill-row.overdue { border-color: rgba(255,92,92,0.35); }
-  .bill-row.due-soon { border-color: rgba(242,199,106,0.35); }
-
-  /* checkbox */
-  .bill-check {
-    width: 20px; height: 20px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    background: transparent;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    transition: border-color 0.15s, background 0.15s;
-  }
-  .bill-check:hover { border-color: var(--accent2); }
-  .bill-check.checked {
-    background: var(--accent2);
-    border-color: var(--accent2);
-  }
-  .bill-check.checked::after {
-    content: '✓';
-    color: #0e0e10;
-    font-size: 0.7rem;
-    font-weight: 700;
-  }
-
-  .bill-info { min-width: 0; }
-  .bill-name {
-    font-size: 0.85rem;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .bill-row.paid .bill-name { text-decoration: line-through; color: var(--muted); }
-  .bill-meta {
-    font-size: 0.62rem;
-    color: var(--muted);
-    margin-top: 3px;
-    letter-spacing: 0.06em;
-  }
-  .bill-meta .tag-overdue { color: var(--red); }
-  .bill-meta .tag-soon { color: var(--warn); }
-  .bill-meta .tag-paid { color: var(--accent2); }
-
-  .bill-amount {
-    font-family: 'Fraunces', serif;
-    font-size: 1.2rem;
-    font-weight: 300;
-    color: var(--text);
-    text-align: right;
-    white-space: nowrap;
-  }
-  .bill-row.paid .bill-amount { text-decoration: line-through; color: var(--muted); }
-
-  .bill-actions { display: flex; gap: 6px; }
-  .bill-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.6rem;
-    letter-spacing: 0.06em;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s;
-    white-space: nowrap;
-  }
-  .bill-btn:hover { color: var(--accent); border-color: var(--accent); }
-  .bill-btn.danger:hover { color: var(--red); border-color: var(--red); }
-
-  /* ── WEEKLY BUDGET ROW ── */
-  .week-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
-    animation: fadeUp 0.25s ease both;
-  }
-  .week-row.week-over { border-color: rgba(255,92,92,0.35); }
-  .week-row.week-past { opacity: 0.5; }
-
-  .week-header {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    align-items: center;
-    gap: 14px;
-  }
-  .week-name { font-size: 0.85rem; color: var(--text); }
-  .week-range { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.06em; }
-  .week-totals { text-align: right; }
-  .week-spent {
-    font-family: 'Fraunces', serif;
-    font-size: 1.1rem;
-    font-weight: 300;
-    color: var(--text);
-    white-space: nowrap;
-  }
-  .week-remaining {
-    font-size: 0.62rem;
-    margin-top: 2px;
-    white-space: nowrap;
-  }
-  .week-remaining.ok { color: var(--accent2); }
-  .week-remaining.warn { color: var(--warn); }
-  .week-remaining.over { color: var(--red); }
-
-  .week-bar-wrap {
-    height: 3px;
-    background: var(--surface2);
-    border-radius: 2px;
-    margin-top: 10px;
-    overflow: hidden;
-  }
-  .week-bar {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.3s ease;
-    background: var(--accent2);
-  }
-  .week-bar.warn { background: var(--warn); }
-  .week-bar.over { background: var(--red); width: 100% !important; }
-
-  .week-logs {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .week-log-entry {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.68rem;
-    color: var(--muted);
-    padding: 4px 0;
-    border-top: 1px solid var(--border);
-  }
-  .week-log-entry .log-del {
-    background: none;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 0.65rem;
-    padding: 0 4px;
-    transition: color 0.15s;
-  }
-  .week-log-entry .log-del:hover { color: var(--red); }
-
-  .week-footer {
-    margin-top: 10px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .week-log-input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    padding: 6px 10px;
-    border-radius: 5px;
-    outline: none;
-    width: 110px;
-    transition: border-color 0.15s;
-  }
-  .week-log-input::placeholder { color: var(--muted); }
-  .week-log-input:focus { border-color: var(--accent); }
-  .week-log-label {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    padding: 6px 10px;
-    border-radius: 5px;
-    outline: none;
-    flex: 1;
-    transition: border-color 0.15s;
-  }
-  .week-log-label::placeholder { color: var(--muted); }
-  .week-log-label:focus { border-color: var(--accent); }
-
-  /* ── ADD BILL MODAL ── */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(14,14,16,0.85);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 28px 28px 24px;
-    width: 100%;
-    max-width: 440px;
-    animation: fadeUp 0.2s ease both;
-  }
-  .modal h3 {
-    font-family: 'Fraunces', serif;
-    font-style: italic;
-    font-weight: 300;
-    font-size: 1.3rem;
-    color: var(--text);
-    margin-bottom: 20px;
-  }
-  .form-group { margin-bottom: 14px; }
-  .form-group label {
-    display: block;
-    font-size: 0.6rem;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .form-group input, .form-group select {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.8rem;
-    padding: 9px 12px;
-    border-radius: 6px;
-    outline: none;
-    transition: border-color 0.15s;
-    color-scheme: dark;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-  .form-group select option { background: var(--surface2); }
-
-  .type-toggle {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 18px;
-  }
-  .type-btn {
-    flex: 1;
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.06em;
-    padding: 9px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-transform: uppercase;
-  }
-  .type-btn.active { color: var(--accent); border-color: var(--accent); background: rgba(212,242,100,0.06); }
-
-  .form-fields-standard, .form-fields-weekly { display: none; }
-  .form-fields-standard.active, .form-fields-weekly.active { display: block; }
-
-  .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
-  .btn-primary {
-    flex: 1;
-    background: var(--accent);
-    border: none;
-    color: #0e0e10;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .btn-primary:hover { opacity: 0.85; }
-  .btn-cancel {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .btn-cancel:hover { color: var(--text); border-color: var(--muted); }
-
-  .empty-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--muted);
-    font-size: 0.72rem;
-    letter-spacing: 0.08em;
-    border: 1px dashed var(--border);
-    border-radius: 10px;
-  }
-
-  /* log spend inline form toggle */
-  .log-form-wrap { display: none; }
-  .log-form-wrap.open { display: flex; }
 </style>
 </head>
 <body>
+<div id="root"></div>
 
-<div class="topbar">
-  <h1>Budget</h1>
-  <span class="topbar-sub">monthly overview</span>
-  <div class="month-ctrl">
-    <button id="prev-month">← prev</button>
-    <span class="month-label" id="month-label"></span>
-    <button id="next-month">next →</button>
-  </div>
-</div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
 
-<div class="container">
+const Icon = ({ children, size = 16, color = "currentColor", strokeWidth = 2 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
+       fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    {children}
+  </svg>
+);
+const ListChecksIcon = (p) => <Icon {...p}><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></Icon>;
+const StickyNoteIcon = (p) => <Icon {...p}><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v6h6"/></Icon>;
+const PlusIcon = (p) => <Icon {...p}><path d="M12 5v14"/><path d="M5 12h14"/></Icon>;
+const CheckIcon = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
+const RotateCcwIcon = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></Icon>;
+const SparklesIcon = (p) => <Icon {...p}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></Icon>;
+const XIcon = (p) => <Icon {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
+const Edit3Icon = (p) => <Icon {...p}><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></Icon>;
+const LockIcon = (p) => <Icon {...p}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></Icon>;
+const SaveIcon = (p) => <Icon {...p}><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></Icon>;
+const WandIcon = (p) => <Icon {...p}><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></Icon>;
 
-  <!-- ── SECTION 1: OVERVIEW ── -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-num">01</span>
-      <h2>Overview</h2>
-      <div class="rule"></div>
-    </div>
-    <div class="stat-grid">
-      <div class="stat highlight">
-        <div class="stat-label">Money I Have</div>
-        <div class="stat-input-wrap">
-          <input class="stat-input" id="money-have" type="number" placeholder="0.00" step="0.01">
-        </div>
-        <div class="stat-sub">tap to edit · auto-adjusts</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Bills This Month</div>
-        <div class="stat-value" id="total-owed">$0.00</div>
-        <div class="stat-sub">full month cost</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Need to Earn</div>
-        <div class="stat-value" id="need-earn">$0.00</div>
-        <div class="stat-sub">to cover all expenses</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Unpaid Bills Remaining</div>
-        <div class="stat-value" id="still-owe">$0.00</div>
-        <div class="stat-sub">not yet paid or logged</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Left Over</div>
-        <div class="stat-value" id="left-over">$0.00</div>
-        <div class="stat-sub">after all bills paid</div>
-      </div>
-    </div>
-  </div>
+const SCREENS = [
+  { label: "Home Page", emoji: "🏠" },
+  { label: "Settings", emoji: "⚙️" },
+  { label: "Log Workout", emoji: "💪" },
+  { label: "Calendar", emoji: "📅" },
+  { label: "History / Data", emoji: "📊" },
+];
 
-  <!-- ── SECTION 2: BILLS ── -->
-  <div class="section">
-    <div class="section-head">
-      <span class="section-num">02</span>
-      <h2>Bills & Expenses</h2>
-      <div class="rule"></div>
-      <button class="head-action" id="add-bill-btn">+ add bill</button>
-    </div>
-    <div class="bills-list" id="bills-list">
-      <div class="empty-state" id="empty-state">no bills added yet — hit + add bill to get started</div>
-    </div>
-  </div>
+const DATA_KEY = "tracker-data-v3";
+const OLD_V2_KEY = "tracker-data-v2";
+const OLD_V1_KEY = "tracker-data-v1";
 
-</div>
+const DIVIDER = (label, emoji) => `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${emoji}  ${label.toUpperCase()}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-<!-- ── ADD BILL MODAL ── -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-    <h3>Add a Bill</h3>
-    <div class="type-toggle">
-      <button class="type-btn active" id="type-standard" onclick="setType('standard')">Standard</button>
-      <button class="type-btn" id="type-weekly" onclick="setType('weekly')">Weekly Budget</button>
-    </div>
-
-    <div class="form-fields-standard active" id="fields-standard">
-      <div class="form-group">
-        <label>Name</label>
-        <input type="text" id="f-name" placeholder="e.g. Rent, Netflix…">
-      </div>
-      <div class="form-group">
-        <label>Amount ($)</label>
-        <input type="number" id="f-amount" placeholder="0.00" step="0.01" min="0">
-      </div>
-      <div class="form-group">
-        <label>Due Date <span style="color:var(--muted);font-size:0.55rem;">(optional)</span></label>
-        <input type="date" id="f-due">
-      </div>
-    </div>
-
-    <div class="form-fields-weekly" id="fields-weekly">
-      <div class="form-group">
-        <label>Name</label>
-        <input type="text" id="fw-name" placeholder="e.g. Groceries…">
-      </div>
-      <div class="form-group">
-        <label>Weekly Budget ($)</label>
-        <input type="number" id="fw-budget" placeholder="100.00" step="0.01" min="0">
-      </div>
-      <div class="form-group">
-        <label>First Friday of Range</label>
-        <input type="date" id="fw-start">
-      </div>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" id="modal-cancel">Cancel</button>
-      <button class="btn-primary" id="modal-save">Add Bill</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ── STATE ──────────────────────────────────────────────────────────
-let state = {
-  moneyHave: 0,
-  bills: [],      // { id, type:'standard', name, amount, dueDate, paid }
-  weekly: [],     // { id, name, weeklyBudget, startFriday, weekData:{} }
-  monthOffset: 0  // 0 = current month
+const STARTER_NOTES = () => {
+  let out = "big-picture stuff goes up here.\narchitecture, naming, ideas for later...\n";
+  for (const s of SCREENS) {
+    out += DIVIDER(s.label, s.emoji);
+    out += `notes for the ${s.label.toLowerCase()}...\n`;
+  }
+  return out;
 };
 
-function loadState() {
+const DEFAULT_DATA = {
+  checklist: [],
+  globalNotes: "",
+  prompts: "",
+};
+
+function loadData() {
   try {
-    const s = localStorage.getItem('budget_v2');
-    if (s) state = JSON.parse(s);
-  } catch(e) {}
-}
-function saveState() {
-  localStorage.setItem('budget_v2', JSON.stringify(state));
-}
-loadState();
-
-// ── HELPERS ────────────────────────────────────────────────────────
-function uid() { return Math.random().toString(36).slice(2,9); }
-
-// adjust money I have by a delta (negative for spending, positive for refund)
-function adjustMoney(delta) {
-  state.moneyHave = (parseFloat(state.moneyHave) || 0) + delta;
-  // round to 2 decimals to avoid float drift
-  state.moneyHave = Math.round(state.moneyHave * 100) / 100;
-  const el = document.getElementById('money-have');
-  if (el) el.value = state.moneyHave || '';
-}
-
-function getMonthYear() {
-  const d = new Date();
-  d.setDate(1);
-  d.setMonth(d.getMonth() + state.monthOffset);
-  return { month: d.getMonth(), year: d.getFullYear() };
-}
-
-function fmt$(n) {
-  const neg = n < 0;
-  return (neg ? '-$' : '$') + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-}
-
-function parseDate(s) {
-  const [y,m,d] = s.split('-').map(Number);
-  return new Date(y, m-1, d);
-}
-
-function formatRange(start, end) {
-  const s = parseDate(start);
-  const e = parseDate(end);
-  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const sf = `${mo[s.getMonth()]} ${s.getDate()}`;
-  const ef = `${mo[e.getMonth()]} ${e.getDate()}`;
-  return `${sf} – ${ef}`;
-}
-
-function formatDue(dateStr) {
-  const d = parseDate(dateStr);
-  const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  return `${mo[d.getMonth()]} ${d.getDate()}`;
-}
-
-function daysBetween(dateStr) {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const d = parseDate(dateStr);
-  return Math.round((d - today) / 86400000);
-}
-
-function generateWeeks(startFriday, month, year) {
-  const weeks = [];
-  const pad = n => String(n).padStart(2,'0');
-  const toStr = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
-  const monthStart = new Date(year, month, 1);
-  const monthEnd   = new Date(year, month + 1, 0);
-  let cur = parseDate(startFriday);
-  while (cur <= monthEnd) {
-    const end = new Date(cur.getTime());
-    end.setDate(end.getDate() + 6);
-    if (end >= monthStart) {
-      weeks.push({ startStr: toStr(cur), endStr: toStr(end) });
+    const raw = localStorage.getItem(DATA_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        checklist: parsed.checklist || [],
+        globalNotes: parsed.globalNotes || "",
+        prompts: parsed.prompts || "",
+      };
     }
-    const next = new Date(cur.getTime());
-    next.setDate(next.getDate() + 7);
-    cur = next;
-  }
-  return weeks;
-}
-
-// ── OVERVIEW CALC ──────────────────────────────────────────────────
-function calcTotals() {
-  const { month, year } = getMonthYear();
-  const have = parseFloat(state.moneyHave) || 0;
-
-  // Bills This Month: full month cost, static regardless of paid status
-  let totalOwed = 0;
-  state.bills.forEach(b => { totalOwed += parseFloat(b.amount) || 0; });
-  state.weekly.forEach(w => {
-    generateWeeks(w.startFriday, month, year).forEach(wk => {
-      totalOwed += parseFloat(w.weeklyBudget) || 0;
-    });
-  });
-
-  // Unpaid Bills Remaining: only unpaid bills + un-capped weekly budgets minus what's been logged
-  let stillOwe = 0;
-  state.bills.forEach(b => {
-    if (!b.paid) stillOwe += parseFloat(b.amount) || 0;
-  });
-  state.weekly.forEach(w => {
-    generateWeeks(w.startFriday, month, year).forEach(wk => {
-      if (!w.weekData) w.weekData = {};
-      const wd = w.weekData[wk.startStr] || { logs: [], checked: false };
-      const spent = wd.logs.reduce((s, l) => s + (parseFloat(l.amount)||0), 0);
-      const cap = parseFloat(w.weeklyBudget) || 0;
-      // remaining room in the week's budget (floored at 0)
-      const remaining = Math.max(cap - spent, 0);
-      if (!wd.checked) stillOwe += remaining;
-    });
-  });
-
-  // Need to Earn: gap between bills this month and money you have
-  const needEarn = Math.max(totalOwed - have, 0);
-
-  // Left Over: surplus only once covered
-  const leftOver = have > totalOwed ? have - totalOwed : 0;
-
-  // update DOM
-  document.getElementById('total-owed').textContent = fmt$(totalOwed);
-
-  const needEl = document.getElementById('need-earn');
-  needEl.textContent = fmt$(needEarn);
-  needEl.className = 'stat-value ' + (needEarn > 0 ? 'negative' : 'positive');
-
-  const stillEl = document.getElementById('still-owe');
-  stillEl.textContent = fmt$(stillOwe);
-  stillEl.className = 'stat-value ' + (stillOwe > 0 ? 'negative' : 'positive');
-
-  const leftEl = document.getElementById('left-over');
-  leftEl.textContent = fmt$(leftOver);
-  leftEl.className = 'stat-value ' + (leftOver > 0 ? 'positive' : '');
-}
-
-// ── RENDER ────────────────────────────────────────────────────────
-function render() {
-  const { month, year } = getMonthYear();
-  const mo = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('month-label').textContent = `${mo[month]} ${year}`;
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  const list = document.getElementById('bills-list');
-
-  let rows = [];
-
-  state.bills.forEach(b => {
-    const sortDate = b.dueDate ? parseDate(b.dueDate) : new Date(year, month, 32);
-    rows.push({ sortDate, type: 'standard', data: b });
-  });
-
-  state.weekly.forEach(w => {
-    const weeks = generateWeeks(w.startFriday, month, year);
-    weeks.forEach((wk, idx) => {
-      const start = parseDate(wk.startStr);
-      const end   = parseDate(wk.endStr);
-      const monthStart = new Date(year, month, 1);
-      const monthEndD  = new Date(year, month+1, 0);
-      if (start <= monthEndD && end >= monthStart) {
-        rows.push({ sortDate: start, type: 'weekly', data: w, wk, weekIdx: idx });
+    // Migrate from v2: merge global notes + per-screen brainstorms into one big notes blob with dividers
+    const v2Raw = localStorage.getItem(OLD_V2_KEY);
+    if (v2Raw) {
+      const v2 = JSON.parse(v2Raw);
+      const screenIdMap = {
+        home: "Home Page",
+        settings: "Settings",
+        log: "Log Workout",
+        calendar: "Calendar",
+        history: "History / Data",
+      };
+      let merged = v2.globalNotes || "";
+      if (v2.screens) {
+        for (const s of SCREENS) {
+          // find the v2 screen id matching this label
+          const id = Object.keys(screenIdMap).find((k) => screenIdMap[k] === s.label);
+          const brainstorm = id ? (v2.screens[id]?.brainstorm || "") : "";
+          merged += DIVIDER(s.label, s.emoji);
+          if (brainstorm.trim()) merged += brainstorm.trim() + "\n";
+        }
       }
+      const migrated = {
+        checklist: v2.checklist || [],
+        globalNotes: merged,
+        prompts: v2.prompts || "",
+      };
+      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+    // Migrate from v1
+    const v1Raw = localStorage.getItem(OLD_V1_KEY);
+    if (v1Raw) {
+      const v1 = JSON.parse(v1Raw);
+      const migrated = {
+        checklist: v1.checklist || [],
+        globalNotes: v1.globalNotes || "",
+        prompts: "",
+      };
+      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+  } catch (e) {
+    console.error("load failed", e);
+  }
+  return DEFAULT_DATA;
+}
+
+function saveData(data) {
+  try {
+    localStorage.setItem(DATA_KEY, JSON.stringify(data));
+    return true;
+  } catch (e) {
+    console.error("save failed", e);
+    return false;
+  }
+}
+
+function getStorageSize() {
+  try {
+    const raw = localStorage.getItem(DATA_KEY) || "";
+    return new Blob([raw]).size;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+}
+
+function App() {
+  const [data, setData] = useState(DEFAULT_DATA);
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("checklist");
+  const [storageSize, setStorageSize] = useState(0);
+
+  useEffect(() => {
+    setData(loadData());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!loading) setStorageSize(getStorageSize());
+  }, [data, loading]);
+
+  useEffect(() => {
+    if (loading) return;
+    const sections = ["checklist", "notes", "prompts"];
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible[0]) setActiveSection(visible[0].target.id);
+      },
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
     });
-  });
+    return () => observer.disconnect();
+  }, [loading]);
 
-  rows.sort((a, b) => a.sortDate - b.sortDate);
+  const persist = (next) => {
+    setData(next);
+    const ok = saveData(next);
+    if (!ok) alert("Couldn't save — browser storage might be full.");
+  };
 
-  let html = '';
-  if (rows.length === 0) {
-    html = '<div class="empty-state" id="empty-state">no bills added yet — hit + add bill to get started</div>';
+  const scrollTo = (id) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.loadingWrap}>
+        <div style={styles.loadingInner}>
+          <SparklesIcon size={28} color="#E85D4E" />
+          <span style={{ fontFamily: "Fraunces, serif", fontSize: 20 }}>waking up...</span>
+        </div>
+      </div>
+    );
   }
 
-  const seenWeeklyIds = new Set();
-  rows.forEach(row => {
-    if (row.type === 'standard') {
-      html += renderStandardBill(row.data, today);
-    } else {
-      const isFirst = !seenWeeklyIds.has(row.data.id);
-      seenWeeklyIds.add(row.data.id);
-      html += renderWeeklyRow(row.data, row.wk, today, isFirst);
-    }
-  });
-
-  list.innerHTML = html;
-  calcTotals();
+  return (
+    <div style={styles.app} className="app-container">
+      <Sidebar
+        activeSection={activeSection}
+        onNavigate={scrollTo}
+        storageSize={storageSize}
+      />
+      <main style={styles.main} className="main-content">
+        <ChecklistSection
+          items={data.checklist}
+          onChange={(checklist) => persist({ ...data, checklist })}
+        />
+        <LockableTextSection
+          id="prompts"
+          eyebrow="library"
+          title="Prompts Used"
+          subtitle="Stash the prompts that worked so you can reuse them."
+          icon={<WandIcon size={14} color="#E85D4E" />}
+          stickerText="prompts"
+          placeholder={"// midjourney — start button\na glowing rounded button, coral gradient...\n\n// claude — expo setup\nhelp me debug this error in..."}
+          value={data.prompts}
+          onSave={(prompts) => persist({ ...data, prompts })}
+          minHeight={220}
+          mono
+        />
+        <GlobalNotesSection
+          value={data.globalNotes}
+          onSave={(globalNotes) => persist({ ...data, globalNotes })}
+        />
+        <div style={styles.footer}>
+          <SparklesIcon size={14} color="#7A6E5A" />
+          <span>end of the road · keep shipping</span>
+        </div>
+      </main>
+    </div>
+  );
 }
 
-function renderStandardBill(b, today) {
-  let statusClass = '';
-  let statusTag = '';
-  let dueLine = '';
-
-  if (b.paid) {
-    statusClass = 'paid';
-    statusTag = '<span class="tag-paid">paid</span>';
-    dueLine = b.dueDate ? `due ${formatDue(b.dueDate)} &nbsp; ${statusTag}` : statusTag;
-  } else if (b.dueDate) {
-    const days = daysBetween(b.dueDate);
-    dueLine = `due ${formatDue(b.dueDate)}`;
-    if (days < 0) {
-      statusClass = 'overdue';
-      statusTag = `<span class="tag-overdue">overdue by ${Math.abs(days)}d</span>`;
-    } else if (days <= 5) {
-      statusClass = 'due-soon';
-      statusTag = `<span class="tag-soon">due in ${days}d</span>`;
-    }
-    if (statusTag) dueLine += ` &nbsp; ${statusTag}`;
-  } else {
-    dueLine = '<span style="color:var(--muted)">no due date</span>';
-  }
-
-  return `
-  <div class="bill-row ${statusClass}" data-id="${b.id}">
-    <div class="bill-check ${b.paid ? 'checked' : ''}" onclick="togglePaid('${b.id}')"></div>
-    <div class="bill-info">
-      <div class="bill-name">${esc(b.name)}</div>
-      <div class="bill-meta">${dueLine}</div>
-    </div>
-    <div class="bill-amount">${fmt$(b.amount)}</div>
-    <div class="bill-actions">
-      <button class="bill-btn danger" onclick="deleteBill('${b.id}')">remove</button>
-    </div>
-  </div>`;
-}
-
-function renderWeeklyRow(w, wk, today, isFirst) {
-  const end = parseDate(wk.endStr);
-  const isPast = end < today;
-
-  const weekKey = `${w.id}_${wk.startStr}`;
-  if (!w.weekData) w.weekData = {};
-  if (!w.weekData[wk.startStr]) w.weekData[wk.startStr] = { logs: [], checked: false };
-  const wd = w.weekData[wk.startStr];
-
-  const spent = wd.logs.reduce((s, l) => s + (parseFloat(l.amount)||0), 0);
-  const cap = parseFloat(w.weeklyBudget) || 0;
-  const remaining = cap - spent;
-  const pct = cap > 0 ? Math.min(spent / cap, 1) * 100 : 0;
-
-  const isChecked = !!wd.checked;
-
-  let barClass = pct >= 100 ? 'over' : pct >= 75 ? 'warn' : '';
-  let remClass = remaining < 0 ? 'over' : remaining < cap * 0.25 ? 'warn' : 'ok';
-  let rowClass = isChecked ? 'week-done' : remaining < 0 ? 'week-over' : isPast ? 'week-past' : '';
-
-  const logsHtml = wd.logs.map(l => `
-    <div class="week-log-entry">
-      <span>${esc(l.label || 'purchase')}</span>
-      <span style="display:flex;align-items:center;gap:8px;">
-        <span>${fmt$(l.amount)}</span>
-        <button class="log-del" onclick="deleteLog('${w.id}','${wk.startStr}','${l.id}')">✕</button>
-      </span>
-    </div>`).join('');
-
-  return `
-  <div class="week-row ${rowClass}" data-wkey="${weekKey}" style="${isChecked ? 'opacity:0.45' : ''}">
-    <div class="week-header">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="bill-check ${isChecked ? 'checked' : ''}"
-          onclick="toggleWeekCheck('${w.id}','${wk.startStr}')"
-          title="mark week as done">
+function Sidebar({ activeSection, onNavigate, storageSize }) {
+  const sizePercent = Math.min(100, (storageSize / (5 * 1024 * 1024)) * 100);
+  return (
+    <aside style={styles.sidebar} className="sidebar">
+      <div style={styles.logoWrap}>
+        <div style={styles.logoBadge}>
+          <SparklesIcon size={18} color="#FFF8EF" />
         </div>
         <div>
-          <div class="week-name" style="${isChecked ? 'text-decoration:line-through;color:var(--muted)' : ''}">${esc(w.name)}</div>
-          <div class="week-range">${formatRange(wk.startStr, wk.endStr)}</div>
+          <div style={styles.logoTitle}>control room</div>
+          <div style={styles.logoSub}>app progress tracker</div>
         </div>
       </div>
-      <div class="week-totals">
-        <div class="week-spent">${fmt$(spent)} <span style="color:var(--muted);font-size:0.75rem;">/ ${fmt$(cap)}</span></div>
-        <div class="week-remaining ${remClass}">${remaining >= 0 ? fmt$(remaining) + ' left' : fmt$(Math.abs(remaining)) + ' over'}</div>
+
+      <NavSection title="sections">
+        <NavItem active={activeSection === "checklist"} onClick={() => onNavigate("checklist")}
+          icon={<ListChecksIcon size={14} />} label="Expo Checklist" />
+        <NavItem active={activeSection === "prompts"} onClick={() => onNavigate("prompts")}
+          icon={<WandIcon size={14} />} label="Prompts Used" />
+        <NavItem active={activeSection === "notes"} onClick={() => onNavigate("notes")}
+          icon={<StickyNoteIcon size={14} />} label="Global Notes" />
+      </NavSection>
+
+      <div style={styles.sidebarFooter}>
+        <div style={styles.storageLabel}>
+          <span>browser storage</span>
+          <span>{formatBytes(storageSize)}</span>
+        </div>
+        <div style={styles.storageBar}>
+          <div style={{
+            ...styles.storageFill,
+            width: `${sizePercent}%`,
+            background: sizePercent > 80 ? "#EF4444" : sizePercent > 60 ? "#F59E0B" : "#10B981",
+          }} />
+        </div>
+        <div style={styles.sidebarFooterText}>
+          saved in this browser<br />
+          <span style={{ opacity: 0.6 }}>per-device · local only</span>
+        </div>
       </div>
-      <div class="bill-actions">
-        <button class="bill-btn" onclick="toggleLogForm('${w.id}','${wk.startStr}')">+ log</button>
-        ${isFirst ? `<button class="bill-btn danger" onclick="deleteWeekly('${w.id}')">remove</button>` : ''}
+    </aside>
+  );
+}
+
+function NavSection({ title, children }) {
+  return (
+    <div style={styles.navSection}>
+      <div style={styles.navSectionTitle}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function NavItem({ active, onClick, icon, label }) {
+  return (
+    <button
+      onClick={onClick}
+      className={active ? "" : "nav-item-hover"}
+      style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
+    >
+      <span style={styles.navItemIcon}>{icon}</span>
+      <span style={styles.navItemLabel}>{label}</span>
+    </button>
+  );
+}
+
+function SectionHeader({ eyebrow, title, subtitle, sticker, stickerIcon }) {
+  return (
+    <div style={styles.sectionHeaderWrap}>
+      <div>
+        {eyebrow && <div style={styles.eyebrow}>{eyebrow}</div>}
+        {title && <h2 style={styles.sectionTitle} className="page-title">{title}</h2>}
+        {subtitle && <p style={styles.pageSub}>{subtitle}</p>}
       </div>
+      {sticker && (
+        <div style={styles.headerSticker}>
+          {stickerIcon}<span>{sticker}</span>
+        </div>
+      )}
     </div>
-    <div class="week-bar-wrap">
-      <div class="week-bar ${barClass}" style="width:${pct}%"></div>
-    </div>
-    ${wd.logs.length > 0 ? `<div class="week-logs">${logsHtml}</div>` : ''}
-    <div class="log-form-wrap" id="logform-${w.id}-${wk.startStr.replace(/-/g,'')}" style="margin-top:10px;gap:6px;">
-      <input class="week-log-label" id="loglabel-${w.id}-${wk.startStr.replace(/-/g,'')}" placeholder="note (optional)">
-      <input class="week-log-input" id="logamt-${w.id}-${wk.startStr.replace(/-/g,'')}" type="number" placeholder="$0.00" step="0.01" min="0">
-      <button class="bill-btn" onclick="addLog('${w.id}','${wk.startStr}')">add</button>
-    </div>
-  </div>`;
+  );
 }
 
-// ── ACTIONS (with auto money adjustment) ──────────────────────────
-function togglePaid(id) {
-  const b = state.bills.find(x => x.id === id);
-  if (!b) return;
-  const amt = parseFloat(b.amount) || 0;
-  if (!b.paid) {
-    // marking paid → money goes down
-    b.paid = true;
-    adjustMoney(-amt);
-  } else {
-    // un-marking paid → money goes back up
-    b.paid = false;
-    adjustMoney(amt);
+function ChecklistSection({ items, onChange }) {
+  const [newItem, setNewItem] = useState("");
+
+  const handleAdd = () => {
+    if (!newItem.trim()) return;
+    onChange([...items, { id: Date.now().toString(), text: newItem.trim(), done: false }]);
+    setNewItem("");
+  };
+
+  return (
+    <section id="checklist" style={styles.section}>
+      <SectionHeader
+        eyebrow="ritual"
+        title="Expo Checklist"
+        subtitle="Your steps for spinning things up each session. Add your own, check them off, reset when you're done."
+        sticker="kickoff"
+        stickerIcon={<ListChecksIcon size={14} color="#E85D4E" />}
+      />
+
+      <div style={styles.addRow}>
+        <input
+          value={newItem}
+          onChange={(e) => setNewItem(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+          placeholder="add a step (e.g. cd into the project folder)"
+          style={{ ...styles.textInput, flex: 1 }}
+        />
+        <button style={styles.primaryBtn} onClick={handleAdd}>
+          <PlusIcon size={16} /> add step
+        </button>
+        {items.length > 0 && (
+          <button
+            style={styles.ghostBtn}
+            onClick={() => onChange(items.map((i) => ({ ...i, done: false })))}
+          >
+            <RotateCcwIcon size={13} /> reset all
+          </button>
+        )}
+      </div>
+
+      <div style={styles.checklistList}>
+        {items.length === 0 ? (
+          <div style={styles.emptyState}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>📋</div>
+            <div style={{ fontFamily: "Fraunces, serif", fontSize: 20 }}>empty checklist</div>
+            <div style={{ color: "#7A6E5A", marginTop: 4 }}>add your first step above</div>
+          </div>
+        ) : (
+          items.map((item, idx) => (
+            <div key={item.id} style={styles.checklistItem}>
+              <span style={styles.checklistNumber}>{idx + 1}</span>
+              <button
+                onClick={() =>
+                  onChange(items.map((i) => i.id === item.id ? { ...i, done: !i.done } : i))
+                }
+                style={{ ...styles.checkbox, ...(item.done ? styles.checkboxDone : {}) }}
+              >
+                {item.done && <CheckIcon size={14} color="#FFF8EF" strokeWidth={3} />}
+              </button>
+              <span
+                style={{
+                  ...styles.checklistText,
+                  textDecoration: item.done ? "line-through" : "none",
+                  opacity: item.done ? 0.5 : 1,
+                }}
+              >
+                {item.text}
+              </span>
+              <button
+                onClick={() => onChange(items.filter((i) => i.id !== item.id))}
+                style={styles.iconBtn}
+                title="delete"
+              >
+                <XIcon size={14} />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function GlobalNotesSection({ value, onSave }) {
+  const [editing, setEditing] = useState(!value);
+  const [draft, setDraft] = useState(value);
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const handleSave = () => {
+    onSave(draft);
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setDraft(value);
+    setEditing(false);
+  };
+
+  const insertScaffolding = () => {
+    const scaffold = STARTER_NOTES();
+    setDraft(scaffold);
+    setTimeout(() => textareaRef.current?.focus(), 50);
+  };
+
+  const jumpToScreen = (screen) => {
+    if (editing && textareaRef.current) {
+      const ta = textareaRef.current;
+      const target = `${screen.emoji}  ${screen.label.toUpperCase()}`;
+      const idx = draft.indexOf(target);
+      if (idx >= 0) {
+        ta.focus();
+        ta.setSelectionRange(idx, idx);
+        const before = draft.slice(0, idx);
+        const lineNum = before.split("\n").length;
+        const lineHeight = 22;
+        ta.scrollTop = Math.max(0, (lineNum - 2) * lineHeight);
+      } else {
+        // No divider for that screen yet — append one
+        const next = draft + (draft.endsWith("\n") ? "" : "\n") + DIVIDER(screen.label, screen.emoji);
+        setDraft(next);
+        setTimeout(() => {
+          ta.focus();
+          ta.setSelectionRange(next.length, next.length);
+          ta.scrollTop = ta.scrollHeight;
+        }, 50);
+      }
+    } else {
+      // Locked view — scroll the divider into view
+      const marker = document.querySelector(`[data-screen="${screen.label}"]`);
+      if (marker) marker.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const dirty = draft !== value;
+  const isEmpty = !value || !value.trim();
+  const hasAnyDivider = draft && draft.includes("━");
+
+  return (
+    <section id="notes" style={styles.section}>
+      <SectionHeader
+        eyebrow="scratch pad"
+        title="Global Notes"
+        subtitle="Everything in one place. Big-picture stuff up top, then a section per screen."
+        sticker="notes"
+        stickerIcon={<StickyNoteIcon size={14} color="#E85D4E" />}
+      />
+
+      <div style={styles.jumpBar}>
+        <span style={styles.jumpLabel}>jump to ↓</span>
+        {SCREENS.map((s) => (
+          <button
+            key={s.label}
+            onClick={() => jumpToScreen(s)}
+            className="jump-chip"
+            style={styles.jumpChip}
+            title={`jump to ${s.label}`}
+          >
+            <span>{s.emoji}</span>
+            <span>{s.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {editing ? (
+        <>
+          <textarea
+            ref={textareaRef}
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={"start writing... or click 'add screen scaffolding' below to drop in dividers for each screen."}
+            style={{ ...styles.textarea, minHeight: 480, fontFamily: "'JetBrains Mono', monospace", fontSize: 13, lineHeight: 1.6 }}
+          />
+          <div style={styles.editActions}>
+            <button style={styles.primaryBtn} onClick={handleSave}>
+              <SaveIcon size={14} /> save
+            </button>
+            {value && (
+              <button style={styles.ghostBtn} onClick={handleCancel}>cancel</button>
+            )}
+            {!hasAnyDivider && (
+              <button style={styles.ghostBtn} onClick={insertScaffolding} title="add dividers for each screen">
+                <PlusIcon size={12} /> add screen scaffolding
+              </button>
+            )}
+            {dirty && <span style={styles.dirtyHint}>unsaved changes</span>}
+          </div>
+        </>
+      ) : (
+        <div style={styles.lockedWrap}>
+          <div style={styles.lockedBanner}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <LockIcon size={12} />
+              <span>locked · click edit to change</span>
+            </div>
+            <button style={styles.editBtn} onClick={() => { setDraft(value); setEditing(true); }}>
+              <Edit3Icon size={12} /> edit
+            </button>
+          </div>
+          <div style={styles.lockedNotesContent}>
+            {isEmpty ? (
+              <span style={{ color: "#A99D85", fontStyle: "italic" }}>nothing written yet — click edit to start</span>
+            ) : (
+              renderNotesWithDividers(value)
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// Replace divider text blocks with styled headers
+function renderNotesWithDividers(text) {
+  const dividerRe = /━{4,}\n(\S+?)\s+([A-Z][A-Z0-9 \/]+?)\n━{4,}/g;
+  const parts = [];
+  let lastIdx = 0;
+  let m;
+  let key = 0;
+  while ((m = dividerRe.exec(text)) !== null) {
+    if (m.index > lastIdx) {
+      parts.push(
+        <div key={`t-${key++}`} style={styles.notesProse}>
+          {text.slice(lastIdx, m.index)}
+        </div>
+      );
+    }
+    const emoji = m[1];
+    const labelUpper = m[2].trim();
+    const screenLabel = matchScreenLabel(labelUpper);
+    parts.push(
+      <div key={`d-${key++}`} data-screen={screenLabel} style={styles.divider}>
+        <div style={styles.dividerLine} />
+        <div style={styles.dividerLabel}>
+          <span style={{ fontSize: 18 }}>{emoji}</span>
+          <span>{labelUpper}</span>
+        </div>
+        <div style={styles.dividerLine} />
+      </div>
+    );
+    lastIdx = m.index + m[0].length;
   }
-  saveState(); render();
-}
-
-function deleteBill(id) {
-  const b = state.bills.find(x => x.id === id);
-  if (!b) return;
-  // if it was paid, refund the money since we're removing the record
-  if (b.paid) {
-    adjustMoney(parseFloat(b.amount) || 0);
+  if (lastIdx < text.length) {
+    parts.push(
+      <div key={`t-${key++}`} style={styles.notesProse}>
+        {text.slice(lastIdx)}
+      </div>
+    );
   }
-  state.bills = state.bills.filter(x => x.id !== id);
-  saveState(); render();
+  return parts;
 }
 
-function deleteWeekly(id) {
-  const w = state.weekly.find(x => x.id === id);
-  if (!w) return;
-  if (!confirm('Remove "' + w.name + '" and all its weekly data?')) return;
-  // refund all logged spending since we're removing the record
-  let refund = 0;
-  if (w.weekData) {
-    Object.values(w.weekData).forEach(wd => {
-      (wd.logs || []).forEach(l => { refund += parseFloat(l.amount) || 0; });
-    });
+function matchScreenLabel(upperLabel) {
+  for (const s of SCREENS) {
+    if (s.label.toUpperCase() === upperLabel) return s.label;
   }
-  if (refund > 0) adjustMoney(refund);
-  state.weekly = state.weekly.filter(x => x.id !== id);
-  saveState(); render();
+  return upperLabel;
 }
 
-function toggleWeekCheck(wid, startStr) {
-  const w = state.weekly.find(x => x.id === wid);
-  if (!w) return;
-  if (!w.weekData) w.weekData = {};
-  if (!w.weekData[startStr]) w.weekData[startStr] = { logs: [] };
-  const wd = w.weekData[startStr];
-  wd.checked = !wd.checked;
-  saveState(); render();
+function LockableTextSection({ id, eyebrow, title, subtitle, icon, stickerText, placeholder, value, onSave, minHeight = 180, mono = false }) {
+  const [editing, setEditing] = useState(!value);
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const handleSave = () => {
+    onSave(draft);
+    setEditing(false);
+  };
+
+  const handleCancel = () => {
+    setDraft(value);
+    setEditing(false);
+  };
+
+  const dirty = draft !== value;
+
+  return (
+    <section id={id} style={styles.section}>
+      <SectionHeader
+        eyebrow={eyebrow}
+        title={title}
+        subtitle={subtitle}
+        sticker={stickerText}
+        stickerIcon={icon}
+      />
+
+      {editing ? (
+        <>
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={placeholder}
+            style={{
+              ...styles.textarea,
+              minHeight,
+              fontFamily: mono ? "'JetBrains Mono', monospace" : "'DM Sans', sans-serif",
+              fontSize: mono ? 13 : 15,
+            }}
+          />
+          <div style={styles.editActions}>
+            <button style={styles.primaryBtn} onClick={handleSave}>
+              <SaveIcon size={14} /> save
+            </button>
+            {value && (
+              <button style={styles.ghostBtn} onClick={handleCancel}>cancel</button>
+            )}
+            {dirty && <span style={styles.dirtyHint}>unsaved changes</span>}
+          </div>
+        </>
+      ) : (
+        <div style={styles.lockedWrap}>
+          <div style={styles.lockedBanner}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <LockIcon size={12} />
+              <span>locked · click edit to change</span>
+            </div>
+            <button style={styles.editBtn} onClick={() => { setDraft(value); setEditing(true); }}>
+              <Edit3Icon size={12} /> edit
+            </button>
+          </div>
+          <div
+            style={{
+              ...styles.lockedContent,
+              minHeight,
+              fontFamily: mono ? "'JetBrains Mono', monospace" : "'DM Sans', sans-serif",
+              fontSize: mono ? 13 : 15,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            {value || <span style={{ color: "#A99D85", fontStyle: "italic" }}>nothing written yet</span>}
+          </div>
+        </div>
+      )}
+    </section>
+  );
 }
 
-function toggleLogForm(wid, startStr) {
-  const key = `${wid}-${startStr.replace(/-/g,'')}`;
-  const el = document.getElementById('logform-' + key);
-  if (el) el.classList.toggle('open');
-}
-
-function addLog(wid, startStr) {
-  const key = `${wid}-${startStr.replace(/-/g,'')}`;
-  const amtEl = document.getElementById('logamt-' + key);
-  const lblEl = document.getElementById('loglabel-' + key);
-  const amt = parseFloat(amtEl?.value);
-  if (!amt || amt <= 0) return;
-  const label = lblEl?.value.trim() || 'purchase';
-
-  const w = state.weekly.find(x => x.id === wid);
-  if (!w) return;
-  if (!w.weekData) w.weekData = {};
-  if (!w.weekData[startStr]) w.weekData[startStr] = { logs: [] };
-  w.weekData[startStr].logs.push({ id: uid(), label, amount: amt });
-  // money goes down when you log a spend
-  adjustMoney(-amt);
-  saveState(); render();
-}
-
-function deleteLog(wid, startStr, lid) {
-  const w = state.weekly.find(x => x.id === wid);
-  if (!w || !w.weekData?.[startStr]) return;
-  const log = w.weekData[startStr].logs.find(l => l.id === lid);
-  if (log) {
-    // refund the money since we're undoing the spend
-    adjustMoney(parseFloat(log.amount) || 0);
-  }
-  w.weekData[startStr].logs = w.weekData[startStr].logs.filter(l => l.id !== lid);
-  saveState(); render();
-}
-
-// ── MODAL ─────────────────────────────────────────────────────────
-let currentType = 'standard';
-function setType(t) {
-  currentType = t;
-  document.getElementById('type-standard').classList.toggle('active', t === 'standard');
-  document.getElementById('type-weekly').classList.toggle('active', t === 'weekly');
-  document.getElementById('fields-standard').classList.toggle('active', t === 'standard');
-  document.getElementById('fields-weekly').classList.toggle('active', t === 'weekly');
-}
-
-document.getElementById('add-bill-btn').addEventListener('click', () => {
-  document.getElementById('modal-overlay').classList.add('open');
-  const today = new Date();
-  const pad = n => String(n).padStart(2,'0');
-  const todayStr = `${today.getFullYear()}-${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
-  document.getElementById('f-due').value = todayStr;
-  document.getElementById('fw-start').value = todayStr;
-  setType('standard');
-});
-
-document.getElementById('modal-cancel').onclick = closeModal;
-document.getElementById('modal-overlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-});
-
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('open');
-  ['f-name','f-amount','f-due','fw-name','fw-budget'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-}
-
-document.getElementById('modal-save').onclick = () => {
-  if (currentType === 'standard') {
-    const name = document.getElementById('f-name').value.trim();
-    const amount = parseFloat(document.getElementById('f-amount').value);
-    const due = document.getElementById('f-due').value || null;
-    if (!name || !amount) return alert('Please enter a name and amount.');
-    state.bills.push({ id: uid(), type: 'standard', name, amount, dueDate: due, paid: false });
-  } else {
-    const name = document.getElementById('fw-name').value.trim();
-    const budget = parseFloat(document.getElementById('fw-budget').value);
-    const start = document.getElementById('fw-start').value;
-    if (!name || !budget || !start) return alert('Please fill in all fields.');
-    state.weekly.push({ id: uid(), name, weeklyBudget: budget, startFriday: start, weekData: {} });
-  }
-  saveState();
-  closeModal();
-  render();
+const styles = {
+  app: {
+    display: "flex",
+    minHeight: "100vh",
+    background: "#FAF3E3",
+    fontFamily: "'DM Sans', system-ui, sans-serif",
+    color: "#2A2A2A",
+    backgroundImage:
+      "radial-gradient(circle at 20% 20%, rgba(232, 93, 78, 0.06) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(247, 183, 49, 0.08) 0%, transparent 40%)",
+  },
+  loadingWrap: {
+    minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
+    background: "#FAF3E3",
+  },
+  loadingInner: { display: "flex", gap: 12, alignItems: "center" },
+  sidebar: {
+    width: 260, background: "#FFF8EF", borderRight: "2px solid #2A2A2A",
+    padding: "24px 16px", display: "flex", flexDirection: "column", gap: 20,
+    position: "sticky", top: 0, height: "100vh", flexShrink: 0, overflowY: "auto",
+  },
+  logoWrap: {
+    display: "flex", alignItems: "center", gap: 10,
+    padding: "0 8px 16px 8px", borderBottom: "1px dashed #D4C4A8",
+  },
+  logoBadge: {
+    width: 36, height: 36, background: "#E85D4E", borderRadius: 10,
+    display: "flex", alignItems: "center", justifyContent: "center",
+    transform: "rotate(-6deg)", boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  logoTitle: {
+    fontFamily: "Fraunces, serif", fontWeight: 800, fontSize: 18,
+    letterSpacing: "-0.02em", color: "#2A2A2A",
+  },
+  logoSub: { fontSize: 10, color: "#7A6E5A", textTransform: "uppercase", letterSpacing: "0.08em" },
+  navSection: { display: "flex", flexDirection: "column", gap: 2 },
+  navSectionTitle: {
+    fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em",
+    color: "#7A6E5A", padding: "0 12px 6px 12px", fontFamily: "'JetBrains Mono', monospace",
+  },
+  navItem: {
+    display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
+    borderRadius: 8, background: "transparent", border: "none", cursor: "pointer",
+    color: "#2A2A2A", fontSize: 14, fontWeight: 500, textAlign: "left", width: "100%",
+    transition: "background 0.15s",
+  },
+  navItemActive: { background: "#2A2A2A", color: "#FFF8EF" },
+  navItemIcon: { display: "flex", alignItems: "center", justifyContent: "center", width: 18 },
+  navItemLabel: { flex: 1 },
+  sidebarFooter: { marginTop: "auto", padding: "12px", borderTop: "1px dashed #D4C4A8" },
+  storageLabel: {
+    display: "flex", justifyContent: "space-between", fontSize: 10,
+    fontFamily: "'JetBrains Mono', monospace", color: "#7A6E5A",
+    textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4,
+  },
+  storageBar: { height: 4, background: "#F0E4CC", borderRadius: 2, overflow: "hidden" },
+  storageFill: { height: "100%", transition: "width 0.3s" },
+  sidebarFooterText: {
+    fontSize: 10, color: "#7A6E5A", lineHeight: 1.5,
+    fontFamily: "'JetBrains Mono', monospace", marginTop: 10,
+  },
+  main: {
+    flex: 1, padding: "40px 48px 80px 48px", maxWidth: 1000,
+    display: "flex", flexDirection: "column", gap: 56,
+  },
+  section: { display: "flex", flexDirection: "column", gap: 18, scrollMarginTop: 20 },
+  sectionHeaderWrap: {
+    display: "flex", justifyContent: "space-between", alignItems: "flex-start",
+    gap: 20, flexWrap: "wrap",
+  },
+  eyebrow: {
+    fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.15em",
+    color: "#E85D4E", fontFamily: "'JetBrains Mono', monospace", marginBottom: 8,
+  },
+  sectionTitle: {
+    fontFamily: "Fraunces, serif", fontSize: 36, fontWeight: 800,
+    letterSpacing: "-0.03em", margin: 0, lineHeight: 1.05, color: "#2A2A2A",
+  },
+  pageSub: { color: "#7A6E5A", marginTop: 8, fontSize: 14, maxWidth: 560 },
+  headerSticker: {
+    display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px",
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 20,
+    fontSize: 12, fontWeight: 600, transform: "rotate(2deg)",
+    boxShadow: "2px 2px 0 #2A2A2A", fontFamily: "'JetBrains Mono', monospace",
+  },
+  jumpBar: {
+    display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center",
+    padding: "10px 12px", background: "#FFF8EF",
+    border: "2px dashed #D4C4A8", borderRadius: 10,
+  },
+  jumpLabel: {
+    fontSize: 10, fontWeight: 600, textTransform: "uppercase",
+    letterSpacing: "0.1em", color: "#7A6E5A",
+    fontFamily: "'JetBrains Mono', monospace", marginRight: 4,
+  },
+  jumpChip: {
+    display: "inline-flex", alignItems: "center", gap: 5,
+    padding: "4px 10px", background: "#FAF3E3",
+    border: "1.5px solid #2A2A2A", borderRadius: 14,
+    fontSize: 12, fontWeight: 500, color: "#2A2A2A",
+    cursor: "pointer", transition: "all 0.15s",
+  },
+  addRow: { display: "flex", gap: 8, flexWrap: "wrap" },
+  textInput: {
+    padding: "10px 14px", border: "2px solid #2A2A2A", borderRadius: 8,
+    fontSize: 14, background: "#FFF8EF", color: "#2A2A2A",
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  primaryBtn: {
+    padding: "10px 16px", background: "#E85D4E", color: "#FFF8EF",
+    border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 14,
+    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
+    boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  ghostBtn: {
+    padding: "8px 12px", background: "transparent", color: "#2A2A2A",
+    border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 13,
+    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
+  },
+  editBtn: {
+    padding: "6px 12px", background: "#2A2A2A", color: "#FFF8EF",
+    border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12,
+    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
+  },
+  iconBtn: {
+    padding: 8, background: "transparent", border: "none",
+    color: "#94A3B8", cursor: "pointer", display: "flex", alignItems: "center",
+    borderRadius: 6,
+  },
+  checklistList: { display: "flex", flexDirection: "column", gap: 8 },
+  checklistItem: {
+    display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 10,
+    boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  checklistNumber: {
+    fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700,
+    color: "#7A6E5A", width: 20,
+  },
+  checkbox: {
+    width: 22, height: 22, border: "2px solid #2A2A2A", borderRadius: 6,
+    background: "#FAF3E3", cursor: "pointer", display: "flex",
+    alignItems: "center", justifyContent: "center", flexShrink: 0,
+  },
+  checkboxDone: { background: "#E85D4E" },
+  checklistText: { flex: 1, fontSize: 15, lineHeight: 1.4 },
+  emptyState: {
+    textAlign: "center", padding: "48px 20px", background: "#FFF8EF",
+    border: "2px dashed #D4C4A8", borderRadius: 12,
+  },
+  textarea: {
+    width: "100%", padding: 16, border: "2px solid #2A2A2A", borderRadius: 12,
+    background: "#FFF8EF", lineHeight: 1.6, color: "#2A2A2A",
+    boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  editActions: {
+    display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap",
+  },
+  dirtyHint: {
+    fontSize: 11, color: "#E85D4E", fontFamily: "'JetBrains Mono', monospace",
+    textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600,
+  },
+  lockedWrap: {
+    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 12,
+    overflow: "hidden", boxShadow: "2px 2px 0 #2A2A2A",
+  },
+  lockedBanner: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    padding: "8px 14px", background: "#F5ECDE",
+    borderBottom: "1px dashed #D4C4A8",
+    fontSize: 11, color: "#7A6E5A",
+    fontFamily: "'JetBrains Mono', monospace",
+    textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600,
+  },
+  lockedContent: {
+    padding: 16, lineHeight: 1.6, color: "#2A2A2A", wordBreak: "break-word",
+  },
+  lockedNotesContent: {
+    padding: "20px 24px", lineHeight: 1.6, color: "#2A2A2A",
+    wordBreak: "break-word", minHeight: 280,
+  },
+  notesProse: {
+    whiteSpace: "pre-wrap",
+    fontFamily: "'DM Sans', sans-serif",
+    fontSize: 15,
+    color: "#2A2A2A",
+  },
+  divider: {
+    display: "flex", alignItems: "center", gap: 14,
+    margin: "28px 0 18px 0",
+    scrollMarginTop: 20,
+  },
+  dividerLine: {
+    flex: 1, height: 2, background: "#2A2A2A",
+  },
+  dividerLabel: {
+    display: "inline-flex", alignItems: "center", gap: 8,
+    padding: "6px 14px", background: "#E85D4E", color: "#FFF8EF",
+    border: "2px solid #2A2A2A", borderRadius: 20,
+    fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
+    fontFamily: "'JetBrains Mono', monospace",
+    boxShadow: "2px 2px 0 #2A2A2A",
+    flexShrink: 0,
+  },
+  footer: {
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+    padding: "40px 0", fontSize: 12, color: "#7A6E5A",
+    fontFamily: "'JetBrains Mono', monospace",
+    textTransform: "uppercase", letterSpacing: "0.1em",
+    borderTop: "2px dashed #D4C4A8", marginTop: 20,
+  },
 };
 
-// ── MONTH NAV ─────────────────────────────────────────────────────
-document.getElementById('prev-month').addEventListener('click', () => {
-  state.monthOffset--; saveState(); render();
-});
-document.getElementById('next-month').addEventListener('click', () => {
-  state.monthOffset++; saveState(); render();
-});
-
-// ── MONEY HAVE (direct edit sets the value) ───────────────────────
-const haveInput = document.getElementById('money-have');
-haveInput.value = state.moneyHave || '';
-haveInput.addEventListener('input', () => {
-  state.moneyHave = parseFloat(haveInput.value) || 0;
-  saveState(); calcTotals();
-});
-
-// ── UTIL ──────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-// ── INIT ──────────────────────────────────────────────────────────
-render();
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
 </script>
 </body>
 </html>
