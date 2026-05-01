@@ -22,7 +22,6 @@
   input:focus, textarea:focus, select:focus { outline: 2px solid #E85D4E; outline-offset: 2px; }
   textarea { resize: vertical; }
   .nav-item-hover:hover { background: #F5ECDE !important; }
-  .jump-chip:hover { background: #2A2A2A !important; color: #FFF8EF !important; }
   @media (max-width: 768px) {
     .app-container { flex-direction: column !important; }
     .sidebar { width: 100% !important; height: auto !important; position: relative !important; border-right: none !important; border-bottom: 2px solid #2A2A2A !important; }
@@ -43,82 +42,66 @@ const Icon = ({ children, size = 16, color = "currentColor", strokeWidth = 2 }) 
     {children}
   </svg>
 );
-const ListChecksIcon = (p) => <Icon {...p}><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/></Icon>;
 const StickyNoteIcon = (p) => <Icon {...p}><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v6h6"/></Icon>;
-const PlusIcon = (p) => <Icon {...p}><path d="M12 5v14"/><path d="M5 12h14"/></Icon>;
-const CheckIcon = (p) => <Icon {...p}><polyline points="20 6 9 17 4 12"/></Icon>;
-const RotateCcwIcon = (p) => <Icon {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></Icon>;
 const SparklesIcon = (p) => <Icon {...p}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></Icon>;
-const XIcon = (p) => <Icon {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Icon>;
 const Edit3Icon = (p) => <Icon {...p}><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></Icon>;
 const LockIcon = (p) => <Icon {...p}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></Icon>;
 const SaveIcon = (p) => <Icon {...p}><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></Icon>;
 const WandIcon = (p) => <Icon {...p}><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></Icon>;
+const InfoIcon = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></Icon>;
+const TerminalIcon = (p) => <Icon {...p}><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></Icon>;
+const AppleIcon = (p) => <Icon {...p}><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/></Icon>;
+const ClockIcon = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Icon>;
+const MegaphoneIcon = (p) => <Icon {...p}><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></Icon>;
 
-const SCREENS = [
-  { label: "Home Page", emoji: "🏠" },
-  { label: "Settings", emoji: "⚙️" },
-  { label: "Log Workout", emoji: "💪" },
-  { label: "Calendar", emoji: "📅" },
-  { label: "History / Data", emoji: "📊" },
-];
-
-const DATA_KEY = "tracker-data-v3";
+const DATA_KEY = "tracker-data-v4";
+const OLD_V3_KEY = "tracker-data-v3";
 const OLD_V2_KEY = "tracker-data-v2";
 const OLD_V1_KEY = "tracker-data-v1";
 
-const DIVIDER = (label, emoji) => `\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${emoji}  ${label.toUpperCase()}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-
-const STARTER_NOTES = () => {
-  let out = "big-picture stuff goes up here.\narchitecture, naming, ideas for later...\n";
-  for (const s of SCREENS) {
-    out += DIVIDER(s.label, s.emoji);
-    out += `notes for the ${s.label.toLowerCase()}...\n`;
-  }
-  return out;
-};
-
 const DEFAULT_DATA = {
-  checklist: [],
+  whatThisApp: "",
   globalNotes: "",
+  expoGo: "",
   prompts: "",
+  appleStore: "",
+  workOnLater: "",
+  marketingPlan: "",
 };
+
+// Strip the old divider scaffolding from migrated globalNotes so it's a clean plain note
+function stripDividers(text) {
+  if (!text) return "";
+  // Remove the divider blocks: ━━━...━━━\nEMOJI  LABEL\n━━━...━━━
+  return text.replace(/\n*━{4,}\n\S+?\s+[A-Z][A-Z0-9 \/]+?\n━{4,}\n*/g, "\n\n").trim();
+}
 
 function loadData() {
   try {
     const raw = localStorage.getItem(DATA_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return {
-        checklist: parsed.checklist || [],
-        globalNotes: parsed.globalNotes || "",
-        prompts: parsed.prompts || "",
-      };
+      return { ...DEFAULT_DATA, ...parsed };
     }
-    // Migrate from v2: merge global notes + per-screen brainstorms into one big notes blob with dividers
+    // Migrate from v3
+    const v3Raw = localStorage.getItem(OLD_V3_KEY);
+    if (v3Raw) {
+      const v3 = JSON.parse(v3Raw);
+      const migrated = {
+        ...DEFAULT_DATA,
+        globalNotes: stripDividers(v3.globalNotes || ""),
+        prompts: v3.prompts || "",
+      };
+      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
+      return migrated;
+    }
+    // Migrate from v2
     const v2Raw = localStorage.getItem(OLD_V2_KEY);
     if (v2Raw) {
       const v2 = JSON.parse(v2Raw);
-      const screenIdMap = {
-        home: "Home Page",
-        settings: "Settings",
-        log: "Log Workout",
-        calendar: "Calendar",
-        history: "History / Data",
-      };
-      let merged = v2.globalNotes || "";
-      if (v2.screens) {
-        for (const s of SCREENS) {
-          // find the v2 screen id matching this label
-          const id = Object.keys(screenIdMap).find((k) => screenIdMap[k] === s.label);
-          const brainstorm = id ? (v2.screens[id]?.brainstorm || "") : "";
-          merged += DIVIDER(s.label, s.emoji);
-          if (brainstorm.trim()) merged += brainstorm.trim() + "\n";
-        }
-      }
       const migrated = {
-        checklist: v2.checklist || [],
-        globalNotes: merged,
+        ...DEFAULT_DATA,
+        globalNotes: v2.globalNotes || "",
         prompts: v2.prompts || "",
       };
       localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
@@ -129,9 +112,8 @@ function loadData() {
     if (v1Raw) {
       const v1 = JSON.parse(v1Raw);
       const migrated = {
-        checklist: v1.checklist || [],
+        ...DEFAULT_DATA,
         globalNotes: v1.globalNotes || "",
-        prompts: "",
       };
       localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
       return migrated;
@@ -167,10 +149,112 @@ function formatBytes(bytes) {
   return (bytes / (1024 * 1024)).toFixed(2) + " MB";
 }
 
+// Section configuration — order here drives both nav and page order
+const SECTIONS = [
+  {
+    id: "whatThisApp",
+    key: "whatThisApp",
+    navLabel: "What This App Is",
+    eyebrow: "overview",
+    title: "What This App Is",
+    subtitle: "The big picture. What you're building, who it's for, why it matters.",
+    sticker: "the pitch",
+    iconNode: <InfoIcon size={14} color="#E85D4E" />,
+    navIconNode: <InfoIcon size={14} />,
+    placeholder: "what is this app?\nwho is it for?\nwhy does it exist?",
+    minHeight: 200,
+    mono: false,
+  },
+  {
+    id: "globalNotes",
+    key: "globalNotes",
+    navLabel: "Global Notes",
+    eyebrow: "scratch pad",
+    title: "Global Notes",
+    subtitle: "Anything goes — ideas, todos, half-thoughts, reminders.",
+    sticker: "notes",
+    iconNode: <StickyNoteIcon size={14} color="#E85D4E" />,
+    navIconNode: <StickyNoteIcon size={14} />,
+    placeholder: "start writing...",
+    minHeight: 280,
+    mono: false,
+  },
+  {
+    id: "expoGo",
+    key: "expoGo",
+    navLabel: "Expo Go",
+    eyebrow: "kickoff",
+    title: "Expo Go",
+    subtitle: "How to get to Expo Go each session. Commands, paths, the works.",
+    sticker: "spin up",
+    iconNode: <TerminalIcon size={14} color="#E85D4E" />,
+    navIconNode: <TerminalIcon size={14} />,
+    placeholder: "cd into project folder...\nnpx expo start...\nscan qr code...",
+    minHeight: 200,
+    mono: true,
+  },
+  {
+    id: "prompts",
+    key: "prompts",
+    navLabel: "Prompts",
+    eyebrow: "library",
+    title: "Prompts",
+    subtitle: "Stash the prompts that worked so you can reuse them.",
+    sticker: "prompts",
+    iconNode: <WandIcon size={14} color="#E85D4E" />,
+    navIconNode: <WandIcon size={14} />,
+    placeholder: "// midjourney — start button\na glowing rounded button, coral gradient...\n\n// claude — expo setup\nhelp me debug this error in...",
+    minHeight: 220,
+    mono: true,
+  },
+  {
+    id: "appleStore",
+    key: "appleStore",
+    navLabel: "Apple Store",
+    eyebrow: "submission",
+    title: "Apple Store",
+    subtitle: "App Store Connect notes — metadata, screenshots, review status.",
+    sticker: "ship it",
+    iconNode: <AppleIcon size={14} color="#E85D4E" />,
+    navIconNode: <AppleIcon size={14} />,
+    placeholder: "app name, bundle id, screenshots needed...",
+    minHeight: 200,
+    mono: false,
+  },
+  {
+    id: "workOnLater",
+    key: "workOnLater",
+    navLabel: "Work On Later",
+    eyebrow: "backlog",
+    title: "Work On Later",
+    subtitle: "Things you noticed that aren't urgent. Future-you problem.",
+    sticker: "later",
+    iconNode: <ClockIcon size={14} color="#E85D4E" />,
+    navIconNode: <ClockIcon size={14} />,
+    placeholder: "stuff to come back to...",
+    minHeight: 200,
+    mono: false,
+  },
+  {
+    id: "marketingPlan",
+    key: "marketingPlan",
+    navLabel: "Marketing Plan",
+    eyebrow: "growth",
+    title: "Marketing Plan",
+    subtitle: "How people will hear about this thing.",
+    sticker: "launch",
+    iconNode: <MegaphoneIcon size={14} color="#E85D4E" />,
+    navIconNode: <MegaphoneIcon size={14} />,
+    placeholder: "channels, audiences, launch ideas...",
+    minHeight: 200,
+    mono: false,
+  },
+];
+
 function App() {
   const [data, setData] = useState(DEFAULT_DATA);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState("checklist");
+  const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
   const [storageSize, setStorageSize] = useState(0);
 
   useEffect(() => {
@@ -184,7 +268,6 @@ function App() {
 
   useEffect(() => {
     if (loading) return;
-    const sections = ["checklist", "notes", "prompts"];
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -194,8 +277,8 @@ function App() {
       },
       { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
+    SECTIONS.forEach((s) => {
+      const el = document.getElementById(s.id);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
@@ -231,27 +314,22 @@ function App() {
         storageSize={storageSize}
       />
       <main style={styles.main} className="main-content">
-        <ChecklistSection
-          items={data.checklist}
-          onChange={(checklist) => persist({ ...data, checklist })}
-        />
-        <LockableTextSection
-          id="prompts"
-          eyebrow="library"
-          title="Prompts Used"
-          subtitle="Stash the prompts that worked so you can reuse them."
-          icon={<WandIcon size={14} color="#E85D4E" />}
-          stickerText="prompts"
-          placeholder={"// midjourney — start button\na glowing rounded button, coral gradient...\n\n// claude — expo setup\nhelp me debug this error in..."}
-          value={data.prompts}
-          onSave={(prompts) => persist({ ...data, prompts })}
-          minHeight={220}
-          mono
-        />
-        <GlobalNotesSection
-          value={data.globalNotes}
-          onSave={(globalNotes) => persist({ ...data, globalNotes })}
-        />
+        {SECTIONS.map((s) => (
+          <LockableTextSection
+            key={s.id}
+            id={s.id}
+            eyebrow={s.eyebrow}
+            title={s.title}
+            subtitle={s.subtitle}
+            icon={s.iconNode}
+            stickerText={s.sticker}
+            placeholder={s.placeholder}
+            value={data[s.key]}
+            onSave={(val) => persist({ ...data, [s.key]: val })}
+            minHeight={s.minHeight}
+            mono={s.mono}
+          />
+        ))}
         <div style={styles.footer}>
           <SparklesIcon size={14} color="#7A6E5A" />
           <span>end of the road · keep shipping</span>
@@ -276,12 +354,15 @@ function Sidebar({ activeSection, onNavigate, storageSize }) {
       </div>
 
       <NavSection title="sections">
-        <NavItem active={activeSection === "checklist"} onClick={() => onNavigate("checklist")}
-          icon={<ListChecksIcon size={14} />} label="Expo Checklist" />
-        <NavItem active={activeSection === "prompts"} onClick={() => onNavigate("prompts")}
-          icon={<WandIcon size={14} />} label="Prompts Used" />
-        <NavItem active={activeSection === "notes"} onClick={() => onNavigate("notes")}
-          icon={<StickyNoteIcon size={14} />} label="Global Notes" />
+        {SECTIONS.map((s) => (
+          <NavItem
+            key={s.id}
+            active={activeSection === s.id}
+            onClick={() => onNavigate(s.id)}
+            icon={s.navIconNode}
+            label={s.navLabel}
+          />
+        ))}
       </NavSection>
 
       <div style={styles.sidebarFooter}>
@@ -342,268 +423,6 @@ function SectionHeader({ eyebrow, title, subtitle, sticker, stickerIcon }) {
       )}
     </div>
   );
-}
-
-function ChecklistSection({ items, onChange }) {
-  const [newItem, setNewItem] = useState("");
-
-  const handleAdd = () => {
-    if (!newItem.trim()) return;
-    onChange([...items, { id: Date.now().toString(), text: newItem.trim(), done: false }]);
-    setNewItem("");
-  };
-
-  return (
-    <section id="checklist" style={styles.section}>
-      <SectionHeader
-        eyebrow="ritual"
-        title="Expo Checklist"
-        subtitle="Your steps for spinning things up each session. Add your own, check them off, reset when you're done."
-        sticker="kickoff"
-        stickerIcon={<ListChecksIcon size={14} color="#E85D4E" />}
-      />
-
-      <div style={styles.addRow}>
-        <input
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          placeholder="add a step (e.g. cd into the project folder)"
-          style={{ ...styles.textInput, flex: 1 }}
-        />
-        <button style={styles.primaryBtn} onClick={handleAdd}>
-          <PlusIcon size={16} /> add step
-        </button>
-        {items.length > 0 && (
-          <button
-            style={styles.ghostBtn}
-            onClick={() => onChange(items.map((i) => ({ ...i, done: false })))}
-          >
-            <RotateCcwIcon size={13} /> reset all
-          </button>
-        )}
-      </div>
-
-      <div style={styles.checklistList}>
-        {items.length === 0 ? (
-          <div style={styles.emptyState}>
-            <div style={{ fontSize: 36, marginBottom: 8 }}>📋</div>
-            <div style={{ fontFamily: "Fraunces, serif", fontSize: 20 }}>empty checklist</div>
-            <div style={{ color: "#7A6E5A", marginTop: 4 }}>add your first step above</div>
-          </div>
-        ) : (
-          items.map((item, idx) => (
-            <div key={item.id} style={styles.checklistItem}>
-              <span style={styles.checklistNumber}>{idx + 1}</span>
-              <button
-                onClick={() =>
-                  onChange(items.map((i) => i.id === item.id ? { ...i, done: !i.done } : i))
-                }
-                style={{ ...styles.checkbox, ...(item.done ? styles.checkboxDone : {}) }}
-              >
-                {item.done && <CheckIcon size={14} color="#FFF8EF" strokeWidth={3} />}
-              </button>
-              <span
-                style={{
-                  ...styles.checklistText,
-                  textDecoration: item.done ? "line-through" : "none",
-                  opacity: item.done ? 0.5 : 1,
-                }}
-              >
-                {item.text}
-              </span>
-              <button
-                onClick={() => onChange(items.filter((i) => i.id !== item.id))}
-                style={styles.iconBtn}
-                title="delete"
-              >
-                <XIcon size={14} />
-              </button>
-            </div>
-          ))
-        )}
-      </div>
-    </section>
-  );
-}
-
-function GlobalNotesSection({ value, onSave }) {
-  const [editing, setEditing] = useState(!value);
-  const [draft, setDraft] = useState(value);
-  const textareaRef = useRef(null);
-
-  useEffect(() => {
-    setDraft(value);
-  }, [value]);
-
-  const handleSave = () => {
-    onSave(draft);
-    setEditing(false);
-  };
-
-  const handleCancel = () => {
-    setDraft(value);
-    setEditing(false);
-  };
-
-  const insertScaffolding = () => {
-    const scaffold = STARTER_NOTES();
-    setDraft(scaffold);
-    setTimeout(() => textareaRef.current?.focus(), 50);
-  };
-
-  const jumpToScreen = (screen) => {
-    if (editing && textareaRef.current) {
-      const ta = textareaRef.current;
-      const target = `${screen.emoji}  ${screen.label.toUpperCase()}`;
-      const idx = draft.indexOf(target);
-      if (idx >= 0) {
-        ta.focus();
-        ta.setSelectionRange(idx, idx);
-        const before = draft.slice(0, idx);
-        const lineNum = before.split("\n").length;
-        const lineHeight = 22;
-        ta.scrollTop = Math.max(0, (lineNum - 2) * lineHeight);
-      } else {
-        // No divider for that screen yet — append one
-        const next = draft + (draft.endsWith("\n") ? "" : "\n") + DIVIDER(screen.label, screen.emoji);
-        setDraft(next);
-        setTimeout(() => {
-          ta.focus();
-          ta.setSelectionRange(next.length, next.length);
-          ta.scrollTop = ta.scrollHeight;
-        }, 50);
-      }
-    } else {
-      // Locked view — scroll the divider into view
-      const marker = document.querySelector(`[data-screen="${screen.label}"]`);
-      if (marker) marker.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
-  const dirty = draft !== value;
-  const isEmpty = !value || !value.trim();
-  const hasAnyDivider = draft && draft.includes("━");
-
-  return (
-    <section id="notes" style={styles.section}>
-      <SectionHeader
-        eyebrow="scratch pad"
-        title="Global Notes"
-        subtitle="Everything in one place. Big-picture stuff up top, then a section per screen."
-        sticker="notes"
-        stickerIcon={<StickyNoteIcon size={14} color="#E85D4E" />}
-      />
-
-      <div style={styles.jumpBar}>
-        <span style={styles.jumpLabel}>jump to ↓</span>
-        {SCREENS.map((s) => (
-          <button
-            key={s.label}
-            onClick={() => jumpToScreen(s)}
-            className="jump-chip"
-            style={styles.jumpChip}
-            title={`jump to ${s.label}`}
-          >
-            <span>{s.emoji}</span>
-            <span>{s.label}</span>
-          </button>
-        ))}
-      </div>
-
-      {editing ? (
-        <>
-          <textarea
-            ref={textareaRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={"start writing... or click 'add screen scaffolding' below to drop in dividers for each screen."}
-            style={{ ...styles.textarea, minHeight: 480, fontFamily: "'JetBrains Mono', monospace", fontSize: 13, lineHeight: 1.6 }}
-          />
-          <div style={styles.editActions}>
-            <button style={styles.primaryBtn} onClick={handleSave}>
-              <SaveIcon size={14} /> save
-            </button>
-            {value && (
-              <button style={styles.ghostBtn} onClick={handleCancel}>cancel</button>
-            )}
-            {!hasAnyDivider && (
-              <button style={styles.ghostBtn} onClick={insertScaffolding} title="add dividers for each screen">
-                <PlusIcon size={12} /> add screen scaffolding
-              </button>
-            )}
-            {dirty && <span style={styles.dirtyHint}>unsaved changes</span>}
-          </div>
-        </>
-      ) : (
-        <div style={styles.lockedWrap}>
-          <div style={styles.lockedBanner}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <LockIcon size={12} />
-              <span>locked · click edit to change</span>
-            </div>
-            <button style={styles.editBtn} onClick={() => { setDraft(value); setEditing(true); }}>
-              <Edit3Icon size={12} /> edit
-            </button>
-          </div>
-          <div style={styles.lockedNotesContent}>
-            {isEmpty ? (
-              <span style={{ color: "#A99D85", fontStyle: "italic" }}>nothing written yet — click edit to start</span>
-            ) : (
-              renderNotesWithDividers(value)
-            )}
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
-
-// Replace divider text blocks with styled headers
-function renderNotesWithDividers(text) {
-  const dividerRe = /━{4,}\n(\S+?)\s+([A-Z][A-Z0-9 \/]+?)\n━{4,}/g;
-  const parts = [];
-  let lastIdx = 0;
-  let m;
-  let key = 0;
-  while ((m = dividerRe.exec(text)) !== null) {
-    if (m.index > lastIdx) {
-      parts.push(
-        <div key={`t-${key++}`} style={styles.notesProse}>
-          {text.slice(lastIdx, m.index)}
-        </div>
-      );
-    }
-    const emoji = m[1];
-    const labelUpper = m[2].trim();
-    const screenLabel = matchScreenLabel(labelUpper);
-    parts.push(
-      <div key={`d-${key++}`} data-screen={screenLabel} style={styles.divider}>
-        <div style={styles.dividerLine} />
-        <div style={styles.dividerLabel}>
-          <span style={{ fontSize: 18 }}>{emoji}</span>
-          <span>{labelUpper}</span>
-        </div>
-        <div style={styles.dividerLine} />
-      </div>
-    );
-    lastIdx = m.index + m[0].length;
-  }
-  if (lastIdx < text.length) {
-    parts.push(
-      <div key={`t-${key++}`} style={styles.notesProse}>
-        {text.slice(lastIdx)}
-      </div>
-    );
-  }
-  return parts;
-}
-
-function matchScreenLabel(upperLabel) {
-  for (const s of SCREENS) {
-    if (s.label.toUpperCase() === upperLabel) return s.label;
-  }
-  return upperLabel;
 }
 
 function LockableTextSection({ id, eyebrow, title, subtitle, icon, stickerText, placeholder, value, onSave, minHeight = 180, mono = false }) {
@@ -771,29 +590,6 @@ const styles = {
     fontSize: 12, fontWeight: 600, transform: "rotate(2deg)",
     boxShadow: "2px 2px 0 #2A2A2A", fontFamily: "'JetBrains Mono', monospace",
   },
-  jumpBar: {
-    display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center",
-    padding: "10px 12px", background: "#FFF8EF",
-    border: "2px dashed #D4C4A8", borderRadius: 10,
-  },
-  jumpLabel: {
-    fontSize: 10, fontWeight: 600, textTransform: "uppercase",
-    letterSpacing: "0.1em", color: "#7A6E5A",
-    fontFamily: "'JetBrains Mono', monospace", marginRight: 4,
-  },
-  jumpChip: {
-    display: "inline-flex", alignItems: "center", gap: 5,
-    padding: "4px 10px", background: "#FAF3E3",
-    border: "1.5px solid #2A2A2A", borderRadius: 14,
-    fontSize: 12, fontWeight: 500, color: "#2A2A2A",
-    cursor: "pointer", transition: "all 0.15s",
-  },
-  addRow: { display: "flex", gap: 8, flexWrap: "wrap" },
-  textInput: {
-    padding: "10px 14px", border: "2px solid #2A2A2A", borderRadius: 8,
-    fontSize: 14, background: "#FFF8EF", color: "#2A2A2A",
-    fontFamily: "'DM Sans', sans-serif",
-  },
   primaryBtn: {
     padding: "10px 16px", background: "#E85D4E", color: "#FFF8EF",
     border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 14,
@@ -809,32 +605,6 @@ const styles = {
     padding: "6px 12px", background: "#2A2A2A", color: "#FFF8EF",
     border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12,
     cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
-  },
-  iconBtn: {
-    padding: 8, background: "transparent", border: "none",
-    color: "#94A3B8", cursor: "pointer", display: "flex", alignItems: "center",
-    borderRadius: 6,
-  },
-  checklistList: { display: "flex", flexDirection: "column", gap: 8 },
-  checklistItem: {
-    display: "flex", alignItems: "center", gap: 12, padding: "12px 16px",
-    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 10,
-    boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  checklistNumber: {
-    fontFamily: "'JetBrains Mono', monospace", fontSize: 11, fontWeight: 700,
-    color: "#7A6E5A", width: 20,
-  },
-  checkbox: {
-    width: 22, height: 22, border: "2px solid #2A2A2A", borderRadius: 6,
-    background: "#FAF3E3", cursor: "pointer", display: "flex",
-    alignItems: "center", justifyContent: "center", flexShrink: 0,
-  },
-  checkboxDone: { background: "#E85D4E" },
-  checklistText: { flex: 1, fontSize: 15, lineHeight: 1.4 },
-  emptyState: {
-    textAlign: "center", padding: "48px 20px", background: "#FFF8EF",
-    border: "2px dashed #D4C4A8", borderRadius: 12,
   },
   textarea: {
     width: "100%", padding: 16, border: "2px solid #2A2A2A", borderRadius: 12,
@@ -862,33 +632,6 @@ const styles = {
   },
   lockedContent: {
     padding: 16, lineHeight: 1.6, color: "#2A2A2A", wordBreak: "break-word",
-  },
-  lockedNotesContent: {
-    padding: "20px 24px", lineHeight: 1.6, color: "#2A2A2A",
-    wordBreak: "break-word", minHeight: 280,
-  },
-  notesProse: {
-    whiteSpace: "pre-wrap",
-    fontFamily: "'DM Sans', sans-serif",
-    fontSize: 15,
-    color: "#2A2A2A",
-  },
-  divider: {
-    display: "flex", alignItems: "center", gap: 14,
-    margin: "28px 0 18px 0",
-    scrollMarginTop: 20,
-  },
-  dividerLine: {
-    flex: 1, height: 2, background: "#2A2A2A",
-  },
-  dividerLabel: {
-    display: "inline-flex", alignItems: "center", gap: 8,
-    padding: "6px 14px", background: "#E85D4E", color: "#FFF8EF",
-    border: "2px solid #2A2A2A", borderRadius: 20,
-    fontSize: 11, fontWeight: 700, letterSpacing: "0.08em",
-    fontFamily: "'JetBrains Mono', monospace",
-    boxShadow: "2px 2px 0 #2A2A2A",
-    flexShrink: 0,
   },
   footer: {
     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
