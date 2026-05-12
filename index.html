@@ -1,649 +1,677 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Control Room — App Progress Tracker</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,600&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App Progress Tracker</title>
 <style>
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; scroll-behavior: smooth; }
-  body {
-    font-family: 'DM Sans', system-ui, sans-serif;
-    background: #FAF3E3;
-    color: #2A2A2A;
+  :root {
+    --bg: #ffffff;
+    --fg: #111111;
+    --muted: #888888;
+    --line: #e5e5e5;
+    --line-strong: #cccccc;
+    --accent: #2563eb;
+    --soft: #f7f7f7;
+    --danger: #b91c1c;
+    --success: #16a34a;
   }
-  input, textarea, button, select { font-family: 'DM Sans', system-ui, sans-serif; }
-  input:focus, textarea:focus, select:focus { outline: 2px solid #E85D4E; outline-offset: 2px; }
-  textarea { resize: vertical; }
-  .nav-item-hover:hover { background: #F5ECDE !important; }
-  @media (max-width: 768px) {
-    .app-container { flex-direction: column !important; }
-    .sidebar { width: 100% !important; height: auto !important; position: relative !important; border-right: none !important; border-bottom: 2px solid #2A2A2A !important; }
-    .main-content { padding: 24px 20px 60px 20px !important; }
-    .page-title { font-size: 32px !important; }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .title {
+    font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .subtitle-top {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+    font-family: Helvetica, Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    margin: 36px 0 14px;
+  }
+  .section-label:first-of-type { margin-top: 8px; }
+
+  .section-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 36px 0 14px;
+  }
+  .section-label-row .section-label {
+    margin: 0;
+  }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .card-header h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+  .card-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    background: none;
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--fg);
+  }
+  .btn:hover { background: var(--soft); }
+  .btn.primary {
+    background: var(--fg);
+    color: var(--bg);
+    border-color: var(--fg);
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 11px;
+    padding: 8px 16px;
+  }
+  .btn.primary:hover { opacity: 0.85; background: var(--fg); }
+  .btn.danger { color: var(--danger); }
+  .btn.danger:hover { background: #fef2f2; }
+
+  .notes-display {
+    white-space: pre-wrap;
+    padding: 12px 14px;
+    background: var(--soft);
+    border-radius: 4px;
+    font-size: 14px;
+    color: #333;
+    min-height: 44px;
+    word-break: break-word;
+  }
+  .notes-display.empty {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.55;
+    resize: vertical;
+    min-height: 160px;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  input[type="text"] {
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .project-title-display {
+    margin: 0;
+    font-size: 20px;
+  }
+  .project-title-input {
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    padding: 6px 10px;
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .edit-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .empty-state {
+    color: var(--muted);
+    font-size: 14px;
+    padding: 28px 16px;
+    text-align: center;
+    font-style: italic;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+
+  .data-controls {
+    margin-top: 16px;
+    padding-top: 16px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .footer-note {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: Helvetica, Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: var(--bg);
+    padding: 24px;
+    border-radius: 8px;
+    max-width: 420px;
+    width: 100%;
+  }
+  .modal h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+  }
+  .modal-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 20px 16px 60px; }
+    .title { font-size: 18px; }
+    .card { padding: 14px; }
+    .project-title-display { font-size: 17px; }
   }
 </style>
 </head>
 <body>
-<div id="root"></div>
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef } = React;
+<div class="container">
 
-const Icon = ({ children, size = 16, color = "currentColor", strokeWidth = 2 }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24"
-       fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-    {children}
-  </svg>
-);
-const StickyNoteIcon = (p) => <Icon {...p}><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v6h6"/></Icon>;
-const SparklesIcon = (p) => <Icon {...p}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></Icon>;
-const Edit3Icon = (p) => <Icon {...p}><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></Icon>;
-const LockIcon = (p) => <Icon {...p}><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></Icon>;
-const SaveIcon = (p) => <Icon {...p}><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></Icon>;
-const WandIcon = (p) => <Icon {...p}><path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/><path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/><path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/></Icon>;
-const InfoIcon = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></Icon>;
-const TerminalIcon = (p) => <Icon {...p}><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></Icon>;
-const AppleIcon = (p) => <Icon {...p}><path d="M12 20.94c1.5 0 2.75 1.06 4 1.06 3 0 6-8 6-12.22A4.91 4.91 0 0 0 17 5c-2.22 0-4 1.44-5 2-1-.56-2.78-2-5-2a4.9 4.9 0 0 0-5 4.78C2 14 5 22 8 22c1.25 0 2.5-1.06 4-1.06Z"/><path d="M10 2c1 .5 2 2 2 5"/></Icon>;
-const ClockIcon = (p) => <Icon {...p}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></Icon>;
-const MegaphoneIcon = (p) => <Icon {...p}><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></Icon>;
+  <div class="topbar">
+    <div>
+      <h1 class="title">App Progress</h1>
+      <div class="subtitle-top">Build &amp; ship tracker</div>
+    </div>
+  </div>
 
-const DATA_KEY = "tracker-data-v4";
-const OLD_V3_KEY = "tracker-data-v3";
-const OLD_V2_KEY = "tracker-data-v2";
-const OLD_V1_KEY = "tracker-data-v1";
+  <!-- PROJECTS -->
+  <div class="section-label-row">
+    <div class="section-label">Projects</div>
+    <button class="btn primary" id="add-project-btn">+ Add New Project</button>
+  </div>
+  <div id="projects-container"></div>
 
-const DEFAULT_DATA = {
-  whatThisApp: "",
-  globalNotes: "",
-  expoGo: "",
-  prompts: "",
-  appleStore: "",
-  workOnLater: "",
-  marketingPlan: "",
-};
+  <!-- THE PROCESS -->
+  <div class="section-label">The Process</div>
 
-// Strip the old divider scaffolding from migrated globalNotes so it's a clean plain note
-function stripDividers(text) {
-  if (!text) return "";
-  // Remove the divider blocks: ━━━...━━━\nEMOJI  LABEL\n━━━...━━━
-  return text.replace(/\n*━{4,}\n\S+?\s+[A-Z][A-Z0-9 \/]+?\n━{4,}\n*/g, "\n\n").trim();
-}
+  <div class="card" data-playbook="designing">
+    <div class="card-header">
+      <div>
+        <h2>Designing the App</h2>
+        <div class="card-sub">Thinking up the idea, picking what to build, sketching it out.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" data-edit-playbook="designing">Edit</button>
+      </div>
+    </div>
+    <div data-playbook-body="designing"></div>
+  </div>
+
+  <div class="card" data-playbook="building">
+    <div class="card-header">
+      <div>
+        <h2>Building in Cursor</h2>
+        <div class="card-sub">What to do once you're actually building it.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" data-edit-playbook="building">Edit</button>
+      </div>
+    </div>
+    <div data-playbook-body="building"></div>
+  </div>
+
+  <div class="card" data-playbook="shipping">
+    <div class="card-header">
+      <div>
+        <h2>Shipping to the App Store</h2>
+        <div class="card-sub">Submission, screenshots, metadata, review.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" data-edit-playbook="shipping">Edit</button>
+      </div>
+    </div>
+    <div data-playbook-body="shipping"></div>
+  </div>
+
+  <div class="card" data-playbook="marketing">
+    <div class="card-header">
+      <div>
+        <h2>Marketing</h2>
+        <div class="card-sub">How people hear about it. Channels, audiences, launch.</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn" data-edit-playbook="marketing">Edit</button>
+      </div>
+    </div>
+    <div data-playbook-body="marketing"></div>
+  </div>
+
+  <div class="data-controls">
+    <button class="btn" id="export-btn">Export JSON</button>
+    <button class="btn" id="import-btn">Import JSON</button>
+    <input type="file" id="import-file" accept="application/json" style="display:none;">
+  </div>
+
+  <div class="footer-note">
+    Saved in this browser · per-device · local only
+  </div>
+</div>
+
+<div class="modal-bg" id="confirm-modal">
+  <div class="modal">
+    <h3 id="confirm-title">Are you sure?</h3>
+    <div id="confirm-body" style="font-size:14px; color:#444;"></div>
+    <div class="modal-buttons">
+      <button class="btn" id="confirm-cancel">Cancel</button>
+      <button class="btn danger" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'app-progress-tracker-v1';
+
+const PLAYBOOK_DEFS = [
+  { id: 'designing', placeholder: 'Your process for designing apps. What you do before opening Cursor — picking the idea, validating it, sketching the UI, etc.' },
+  { id: 'building',  placeholder: 'Your process inside Cursor. Setup commands, prompting patterns, debugging steps, what to do when stuck.' },
+  { id: 'shipping',  placeholder: 'Your App Store submission checklist. Bundle ID setup, screenshots, metadata, review notes, common rejections to avoid.' },
+  { id: 'marketing', placeholder: 'How you market apps once they ship. Launch channels, posts, communities, what worked, what didn\'t.' }
+];
 
 function loadData() {
   try {
-    const raw = localStorage.getItem(DATA_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return { ...DEFAULT_DATA, ...parsed };
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultData();
+    const parsed = JSON.parse(raw);
+    if (!parsed.playbooks) parsed.playbooks = {};
+    if (!parsed.projects) parsed.projects = [];
+    for (const def of PLAYBOOK_DEFS) {
+      if (parsed.playbooks[def.id] === undefined) parsed.playbooks[def.id] = '';
     }
-    // Migrate from v3
-    const v3Raw = localStorage.getItem(OLD_V3_KEY);
-    if (v3Raw) {
-      const v3 = JSON.parse(v3Raw);
-      const migrated = {
-        ...DEFAULT_DATA,
-        globalNotes: stripDividers(v3.globalNotes || ""),
-        prompts: v3.prompts || "",
-      };
-      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
-      return migrated;
-    }
-    // Migrate from v2
-    const v2Raw = localStorage.getItem(OLD_V2_KEY);
-    if (v2Raw) {
-      const v2 = JSON.parse(v2Raw);
-      const migrated = {
-        ...DEFAULT_DATA,
-        globalNotes: v2.globalNotes || "",
-        prompts: v2.prompts || "",
-      };
-      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
-      return migrated;
-    }
-    // Migrate from v1
-    const v1Raw = localStorage.getItem(OLD_V1_KEY);
-    if (v1Raw) {
-      const v1 = JSON.parse(v1Raw);
-      const migrated = {
-        ...DEFAULT_DATA,
-        globalNotes: v1.globalNotes || "",
-      };
-      localStorage.setItem(DATA_KEY, JSON.stringify(migrated));
-      return migrated;
-    }
+    return parsed;
   } catch (e) {
-    console.error("load failed", e);
-  }
-  return DEFAULT_DATA;
-}
-
-function saveData(data) {
-  try {
-    localStorage.setItem(DATA_KEY, JSON.stringify(data));
-    return true;
-  } catch (e) {
-    console.error("save failed", e);
-    return false;
+    return defaultData();
   }
 }
 
-function getStorageSize() {
-  try {
-    const raw = localStorage.getItem(DATA_KEY) || "";
-    return new Blob([raw]).size;
-  } catch (e) {
-    return 0;
-  }
+function defaultData() {
+  const playbooks = {};
+  for (const def of PLAYBOOK_DEFS) playbooks[def.id] = '';
+  return { playbooks, projects: [] };
 }
 
-function formatBytes(bytes) {
-  if (bytes < 1024) return bytes + " B";
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
-  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+function saveData(d) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
 }
 
-// Section configuration — order here drives both nav and page order
-const SECTIONS = [
-  {
-    id: "whatThisApp",
-    key: "whatThisApp",
-    navLabel: "What This App Is",
-    eyebrow: "overview",
-    title: "What This App Is",
-    subtitle: "The big picture. What you're building, who it's for, why it matters.",
-    sticker: "the pitch",
-    iconNode: <InfoIcon size={14} color="#E85D4E" />,
-    navIconNode: <InfoIcon size={14} />,
-    placeholder: "what is this app?\nwho is it for?\nwhy does it exist?",
-    minHeight: 200,
-    mono: false,
-  },
-  {
-    id: "globalNotes",
-    key: "globalNotes",
-    navLabel: "Global Notes",
-    eyebrow: "scratch pad",
-    title: "Global Notes",
-    subtitle: "Anything goes — ideas, todos, half-thoughts, reminders.",
-    sticker: "notes",
-    iconNode: <StickyNoteIcon size={14} color="#E85D4E" />,
-    navIconNode: <StickyNoteIcon size={14} />,
-    placeholder: "start writing...",
-    minHeight: 280,
-    mono: false,
-  },
-  {
-    id: "expoGo",
-    key: "expoGo",
-    navLabel: "Expo Go",
-    eyebrow: "kickoff",
-    title: "Expo Go",
-    subtitle: "How to get to Expo Go each session. Commands, paths, the works.",
-    sticker: "spin up",
-    iconNode: <TerminalIcon size={14} color="#E85D4E" />,
-    navIconNode: <TerminalIcon size={14} />,
-    placeholder: "cd into project folder...\nnpx expo start...\nscan qr code...",
-    minHeight: 200,
-    mono: true,
-  },
-  {
-    id: "prompts",
-    key: "prompts",
-    navLabel: "Prompts",
-    eyebrow: "library",
-    title: "Prompts",
-    subtitle: "Stash the prompts that worked so you can reuse them.",
-    sticker: "prompts",
-    iconNode: <WandIcon size={14} color="#E85D4E" />,
-    navIconNode: <WandIcon size={14} />,
-    placeholder: "// midjourney — start button\na glowing rounded button, coral gradient...\n\n// claude — expo setup\nhelp me debug this error in...",
-    minHeight: 220,
-    mono: true,
-  },
-  {
-    id: "appleStore",
-    key: "appleStore",
-    navLabel: "Apple Store",
-    eyebrow: "submission",
-    title: "Apple Store",
-    subtitle: "App Store Connect notes — metadata, screenshots, review status.",
-    sticker: "ship it",
-    iconNode: <AppleIcon size={14} color="#E85D4E" />,
-    navIconNode: <AppleIcon size={14} />,
-    placeholder: "app name, bundle id, screenshots needed...",
-    minHeight: 200,
-    mono: false,
-  },
-  {
-    id: "workOnLater",
-    key: "workOnLater",
-    navLabel: "Work On Later",
-    eyebrow: "backlog",
-    title: "Work On Later",
-    subtitle: "Things you noticed that aren't urgent. Future-you problem.",
-    sticker: "later",
-    iconNode: <ClockIcon size={14} color="#E85D4E" />,
-    navIconNode: <ClockIcon size={14} />,
-    placeholder: "stuff to come back to...",
-    minHeight: 200,
-    mono: false,
-  },
-  {
-    id: "marketingPlan",
-    key: "marketingPlan",
-    navLabel: "Marketing Plan",
-    eyebrow: "growth",
-    title: "Marketing Plan",
-    subtitle: "How people will hear about this thing.",
-    sticker: "launch",
-    iconNode: <MegaphoneIcon size={14} color="#E85D4E" />,
-    navIconNode: <MegaphoneIcon size={14} />,
-    placeholder: "channels, audiences, launch ideas...",
-    minHeight: 200,
-    mono: false,
-  },
-];
+let data = loadData();
+let editingPlaybook = null;     // id of playbook currently in edit mode (or null)
+let editingProjectId = null;    // id of project currently in edit mode (or null)
+let pendingConfirm = null;      // callback for confirm modal
 
-function App() {
-  const [data, setData] = useState(DEFAULT_DATA);
-  const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
-  const [storageSize, setStorageSize] = useState(0);
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
-  useEffect(() => {
-    setData(loadData());
-    setLoading(false);
-  }, []);
+function newId(prefix) {
+  return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+}
 
-  useEffect(() => {
-    if (!loading) setStorageSize(getStorageSize());
-  }, [data, loading]);
+// ===== Render =====
 
-  useEffect(() => {
-    if (loading) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible[0]) setActiveSection(visible[0].target.id);
-      },
-      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
-    );
-    SECTIONS.forEach((s) => {
-      const el = document.getElementById(s.id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, [loading]);
+function render() {
+  renderProjects();
+  renderPlaybooks();
+}
 
-  const persist = (next) => {
-    setData(next);
-    const ok = saveData(next);
-    if (!ok) alert("Couldn't save — browser storage might be full.");
-  };
-
-  const scrollTo = (id) => {
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  if (loading) {
-    return (
-      <div style={styles.loadingWrap}>
-        <div style={styles.loadingInner}>
-          <SparklesIcon size={28} color="#E85D4E" />
-          <span style={{ fontFamily: "Fraunces, serif", fontSize: 20 }}>waking up...</span>
-        </div>
-      </div>
-    );
+function renderProjects() {
+  const container = document.getElementById('projects-container');
+  if (!data.projects || data.projects.length === 0) {
+    container.innerHTML = '<div class="empty-state">No projects yet. Click + Add New Project to start one.</div>';
+    return;
   }
 
-  return (
-    <div style={styles.app} className="app-container">
-      <Sidebar
-        activeSection={activeSection}
-        onNavigate={scrollTo}
-        storageSize={storageSize}
-      />
-      <main style={styles.main} className="main-content">
-        {SECTIONS.map((s) => (
-          <LockableTextSection
-            key={s.id}
-            id={s.id}
-            eyebrow={s.eyebrow}
-            title={s.title}
-            subtitle={s.subtitle}
-            icon={s.iconNode}
-            stickerText={s.sticker}
-            placeholder={s.placeholder}
-            value={data[s.key]}
-            onSave={(val) => persist({ ...data, [s.key]: val })}
-            minHeight={s.minHeight}
-            mono={s.mono}
-          />
-        ))}
-        <div style={styles.footer}>
-          <SparklesIcon size={14} color="#7A6E5A" />
-          <span>end of the road · keep shipping</span>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-function Sidebar({ activeSection, onNavigate, storageSize }) {
-  const sizePercent = Math.min(100, (storageSize / (5 * 1024 * 1024)) * 100);
-  return (
-    <aside style={styles.sidebar} className="sidebar">
-      <div style={styles.logoWrap}>
-        <div style={styles.logoBadge}>
-          <SparklesIcon size={18} color="#FFF8EF" />
-        </div>
-        <div>
-          <div style={styles.logoTitle}>control room</div>
-          <div style={styles.logoSub}>app progress tracker</div>
-        </div>
-      </div>
-
-      <NavSection title="sections">
-        {SECTIONS.map((s) => (
-          <NavItem
-            key={s.id}
-            active={activeSection === s.id}
-            onClick={() => onNavigate(s.id)}
-            icon={s.navIconNode}
-            label={s.navLabel}
-          />
-        ))}
-      </NavSection>
-
-      <div style={styles.sidebarFooter}>
-        <div style={styles.storageLabel}>
-          <span>browser storage</span>
-          <span>{formatBytes(storageSize)}</span>
-        </div>
-        <div style={styles.storageBar}>
-          <div style={{
-            ...styles.storageFill,
-            width: `${sizePercent}%`,
-            background: sizePercent > 80 ? "#EF4444" : sizePercent > 60 ? "#F59E0B" : "#10B981",
-          }} />
-        </div>
-        <div style={styles.sidebarFooterText}>
-          saved in this browser<br />
-          <span style={{ opacity: 0.6 }}>per-device · local only</span>
-        </div>
-      </div>
-    </aside>
-  );
-}
-
-function NavSection({ title, children }) {
-  return (
-    <div style={styles.navSection}>
-      <div style={styles.navSectionTitle}>{title}</div>
-      {children}
-    </div>
-  );
-}
-
-function NavItem({ active, onClick, icon, label }) {
-  return (
-    <button
-      onClick={onClick}
-      className={active ? "" : "nav-item-hover"}
-      style={{ ...styles.navItem, ...(active ? styles.navItemActive : {}) }}
-    >
-      <span style={styles.navItemIcon}>{icon}</span>
-      <span style={styles.navItemLabel}>{label}</span>
-    </button>
-  );
-}
-
-function SectionHeader({ eyebrow, title, subtitle, sticker, stickerIcon }) {
-  return (
-    <div style={styles.sectionHeaderWrap}>
-      <div>
-        {eyebrow && <div style={styles.eyebrow}>{eyebrow}</div>}
-        {title && <h2 style={styles.sectionTitle} className="page-title">{title}</h2>}
-        {subtitle && <p style={styles.pageSub}>{subtitle}</p>}
-      </div>
-      {sticker && (
-        <div style={styles.headerSticker}>
-          {stickerIcon}<span>{sticker}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function LockableTextSection({ id, eyebrow, title, subtitle, icon, stickerText, placeholder, value, onSave, minHeight = 180, mono = false }) {
-  const [editing, setEditing] = useState(!value);
-  const [draft, setDraft] = useState(value);
-
-  useEffect(() => {
-    setDraft(value);
-  }, [value]);
-
-  const handleSave = () => {
-    onSave(draft);
-    setEditing(false);
-  };
-
-  const handleCancel = () => {
-    setDraft(value);
-    setEditing(false);
-  };
-
-  const dirty = draft !== value;
-
-  return (
-    <section id={id} style={styles.section}>
-      <SectionHeader
-        eyebrow={eyebrow}
-        title={title}
-        subtitle={subtitle}
-        sticker={stickerText}
-        stickerIcon={icon}
-      />
-
-      {editing ? (
-        <>
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={placeholder}
-            style={{
-              ...styles.textarea,
-              minHeight,
-              fontFamily: mono ? "'JetBrains Mono', monospace" : "'DM Sans', sans-serif",
-              fontSize: mono ? 13 : 15,
-            }}
-          />
-          <div style={styles.editActions}>
-            <button style={styles.primaryBtn} onClick={handleSave}>
-              <SaveIcon size={14} /> save
-            </button>
-            {value && (
-              <button style={styles.ghostBtn} onClick={handleCancel}>cancel</button>
-            )}
-            {dirty && <span style={styles.dirtyHint}>unsaved changes</span>}
-          </div>
-        </>
-      ) : (
-        <div style={styles.lockedWrap}>
-          <div style={styles.lockedBanner}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <LockIcon size={12} />
-              <span>locked · click edit to change</span>
+  container.innerHTML = data.projects.map(p => {
+    if (editingProjectId === p.id) {
+      return `
+        <div class="card" data-project="${p.id}">
+          <div class="card-header">
+            <input type="text" class="project-title-input" data-title-input="${p.id}" value="${escapeHtml(p.title)}" placeholder="Project name (e.g. Workout App)">
+            <div class="header-actions">
+              <button class="btn danger" data-delete-project="${p.id}">Delete</button>
             </div>
-            <button style={styles.editBtn} onClick={() => { setDraft(value); setEditing(true); }}>
-              <Edit3Icon size={12} /> edit
-            </button>
           </div>
-          <div
-            style={{
-              ...styles.lockedContent,
-              minHeight,
-              fontFamily: mono ? "'JetBrains Mono', monospace" : "'DM Sans', sans-serif",
-              fontSize: mono ? 13 : 15,
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {value || <span style={{ color: "#A99D85", fontStyle: "italic" }}>nothing written yet</span>}
+          <textarea data-notes-input="${p.id}" placeholder="Notes for this project. Ideas, todos, things to fix, what you've changed, anything.">${escapeHtml(p.notes)}</textarea>
+          <div class="edit-row">
+            <button class="btn primary" data-save-project="${p.id}">Save</button>
+            <button class="btn" data-cancel-project="${p.id}">Cancel</button>
           </div>
         </div>
-      )}
-    </section>
-  );
+      `;
+    }
+    const notes = p.notes && p.notes.trim()
+      ? `<div class="notes-display">${escapeHtml(p.notes)}</div>`
+      : `<div class="notes-display empty">No notes yet.</div>`;
+    return `
+      <div class="card" data-project="${p.id}">
+        <div class="card-header">
+          <h2 class="project-title-display">${escapeHtml(p.title || 'Untitled Project')}</h2>
+          <div class="header-actions">
+            <button class="btn" data-edit-project="${p.id}">Edit</button>
+          </div>
+        </div>
+        ${notes}
+      </div>
+    `;
+  }).join('');
+
+  // Wire up project buttons
+  container.querySelectorAll('[data-edit-project]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      editingProjectId = btn.getAttribute('data-edit-project');
+      editingPlaybook = null;
+      render();
+      // Focus title if it's a fresh empty one, else notes
+      setTimeout(() => {
+        const p = data.projects.find(x => x.id === editingProjectId);
+        if (p && !p.title) {
+          const ti = document.querySelector(`[data-title-input="${editingProjectId}"]`);
+          if (ti) ti.focus();
+        } else {
+          const ta = document.querySelector(`[data-notes-input="${editingProjectId}"]`);
+          if (ta) ta.focus();
+        }
+      }, 50);
+    });
+  });
+
+  container.querySelectorAll('[data-save-project]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-save-project');
+      const p = data.projects.find(x => x.id === id);
+      if (!p) return;
+      const titleEl = document.querySelector(`[data-title-input="${id}"]`);
+      const notesEl = document.querySelector(`[data-notes-input="${id}"]`);
+      p.title = (titleEl.value || '').trim();
+      p.notes = notesEl.value;
+      saveData(data);
+      editingProjectId = null;
+      render();
+    });
+  });
+
+  container.querySelectorAll('[data-cancel-project]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-cancel-project');
+      const p = data.projects.find(x => x.id === id);
+      // If the project was never saved (no title and no notes), drop it
+      if (p && !p.title && !p.notes) {
+        data.projects = data.projects.filter(x => x.id !== id);
+        saveData(data);
+      }
+      editingProjectId = null;
+      render();
+    });
+  });
+
+  container.querySelectorAll('[data-delete-project]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-delete-project');
+      const p = data.projects.find(x => x.id === id);
+      const name = (p && p.title) ? `"${p.title}"` : 'this project';
+      askConfirm(`Delete ${name}?`, 'This cannot be undone.', () => {
+        data.projects = data.projects.filter(x => x.id !== id);
+        saveData(data);
+        editingProjectId = null;
+        render();
+      });
+    });
+  });
 }
 
-const styles = {
-  app: {
-    display: "flex",
-    minHeight: "100vh",
-    background: "#FAF3E3",
-    fontFamily: "'DM Sans', system-ui, sans-serif",
-    color: "#2A2A2A",
-    backgroundImage:
-      "radial-gradient(circle at 20% 20%, rgba(232, 93, 78, 0.06) 0%, transparent 40%), radial-gradient(circle at 80% 80%, rgba(247, 183, 49, 0.08) 0%, transparent 40%)",
-  },
-  loadingWrap: {
-    minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
-    background: "#FAF3E3",
-  },
-  loadingInner: { display: "flex", gap: 12, alignItems: "center" },
-  sidebar: {
-    width: 260, background: "#FFF8EF", borderRight: "2px solid #2A2A2A",
-    padding: "24px 16px", display: "flex", flexDirection: "column", gap: 20,
-    position: "sticky", top: 0, height: "100vh", flexShrink: 0, overflowY: "auto",
-  },
-  logoWrap: {
-    display: "flex", alignItems: "center", gap: 10,
-    padding: "0 8px 16px 8px", borderBottom: "1px dashed #D4C4A8",
-  },
-  logoBadge: {
-    width: 36, height: 36, background: "#E85D4E", borderRadius: 10,
-    display: "flex", alignItems: "center", justifyContent: "center",
-    transform: "rotate(-6deg)", boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  logoTitle: {
-    fontFamily: "Fraunces, serif", fontWeight: 800, fontSize: 18,
-    letterSpacing: "-0.02em", color: "#2A2A2A",
-  },
-  logoSub: { fontSize: 10, color: "#7A6E5A", textTransform: "uppercase", letterSpacing: "0.08em" },
-  navSection: { display: "flex", flexDirection: "column", gap: 2 },
-  navSectionTitle: {
-    fontSize: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em",
-    color: "#7A6E5A", padding: "0 12px 6px 12px", fontFamily: "'JetBrains Mono', monospace",
-  },
-  navItem: {
-    display: "flex", alignItems: "center", gap: 10, padding: "9px 12px",
-    borderRadius: 8, background: "transparent", border: "none", cursor: "pointer",
-    color: "#2A2A2A", fontSize: 14, fontWeight: 500, textAlign: "left", width: "100%",
-    transition: "background 0.15s",
-  },
-  navItemActive: { background: "#2A2A2A", color: "#FFF8EF" },
-  navItemIcon: { display: "flex", alignItems: "center", justifyContent: "center", width: 18 },
-  navItemLabel: { flex: 1 },
-  sidebarFooter: { marginTop: "auto", padding: "12px", borderTop: "1px dashed #D4C4A8" },
-  storageLabel: {
-    display: "flex", justifyContent: "space-between", fontSize: 10,
-    fontFamily: "'JetBrains Mono', monospace", color: "#7A6E5A",
-    textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4,
-  },
-  storageBar: { height: 4, background: "#F0E4CC", borderRadius: 2, overflow: "hidden" },
-  storageFill: { height: "100%", transition: "width 0.3s" },
-  sidebarFooterText: {
-    fontSize: 10, color: "#7A6E5A", lineHeight: 1.5,
-    fontFamily: "'JetBrains Mono', monospace", marginTop: 10,
-  },
-  main: {
-    flex: 1, padding: "40px 48px 80px 48px", maxWidth: 1000,
-    display: "flex", flexDirection: "column", gap: 56,
-  },
-  section: { display: "flex", flexDirection: "column", gap: 18, scrollMarginTop: 20 },
-  sectionHeaderWrap: {
-    display: "flex", justifyContent: "space-between", alignItems: "flex-start",
-    gap: 20, flexWrap: "wrap",
-  },
-  eyebrow: {
-    fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.15em",
-    color: "#E85D4E", fontFamily: "'JetBrains Mono', monospace", marginBottom: 8,
-  },
-  sectionTitle: {
-    fontFamily: "Fraunces, serif", fontSize: 36, fontWeight: 800,
-    letterSpacing: "-0.03em", margin: 0, lineHeight: 1.05, color: "#2A2A2A",
-  },
-  pageSub: { color: "#7A6E5A", marginTop: 8, fontSize: 14, maxWidth: 560 },
-  headerSticker: {
-    display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 12px",
-    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 20,
-    fontSize: 12, fontWeight: 600, transform: "rotate(2deg)",
-    boxShadow: "2px 2px 0 #2A2A2A", fontFamily: "'JetBrains Mono', monospace",
-  },
-  primaryBtn: {
-    padding: "10px 16px", background: "#E85D4E", color: "#FFF8EF",
-    border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 14,
-    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6,
-    boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  ghostBtn: {
-    padding: "8px 12px", background: "transparent", color: "#2A2A2A",
-    border: "2px solid #2A2A2A", borderRadius: 8, fontWeight: 600, fontSize: 13,
-    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
-  },
-  editBtn: {
-    padding: "6px 12px", background: "#2A2A2A", color: "#FFF8EF",
-    border: "none", borderRadius: 6, fontWeight: 600, fontSize: 12,
-    cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4,
-  },
-  textarea: {
-    width: "100%", padding: 16, border: "2px solid #2A2A2A", borderRadius: 12,
-    background: "#FFF8EF", lineHeight: 1.6, color: "#2A2A2A",
-    boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  editActions: {
-    display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap",
-  },
-  dirtyHint: {
-    fontSize: 11, color: "#E85D4E", fontFamily: "'JetBrains Mono', monospace",
-    textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600,
-  },
-  lockedWrap: {
-    background: "#FFF8EF", border: "2px solid #2A2A2A", borderRadius: 12,
-    overflow: "hidden", boxShadow: "2px 2px 0 #2A2A2A",
-  },
-  lockedBanner: {
-    display: "flex", justifyContent: "space-between", alignItems: "center",
-    padding: "8px 14px", background: "#F5ECDE",
-    borderBottom: "1px dashed #D4C4A8",
-    fontSize: 11, color: "#7A6E5A",
-    fontFamily: "'JetBrains Mono', monospace",
-    textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600,
-  },
-  lockedContent: {
-    padding: 16, lineHeight: 1.6, color: "#2A2A2A", wordBreak: "break-word",
-  },
-  footer: {
-    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-    padding: "40px 0", fontSize: 12, color: "#7A6E5A",
-    fontFamily: "'JetBrains Mono', monospace",
-    textTransform: "uppercase", letterSpacing: "0.1em",
-    borderTop: "2px dashed #D4C4A8", marginTop: 20,
-  },
-};
+function renderPlaybooks() {
+  for (const def of PLAYBOOK_DEFS) {
+    const bodyEl = document.querySelector(`[data-playbook-body="${def.id}"]`);
+    const editBtn = document.querySelector(`[data-edit-playbook="${def.id}"]`);
+    if (!bodyEl) continue;
+    const val = data.playbooks[def.id] || '';
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+    if (editingPlaybook === def.id) {
+      bodyEl.innerHTML = `
+        <textarea data-playbook-textarea="${def.id}" placeholder="${escapeHtml(def.placeholder)}">${escapeHtml(val)}</textarea>
+        <div class="edit-row">
+          <button class="btn primary" data-save-playbook="${def.id}">Save</button>
+          <button class="btn" data-cancel-playbook="${def.id}">Cancel</button>
+        </div>
+      `;
+      if (editBtn) editBtn.style.display = 'none';
+      const ta = bodyEl.querySelector('textarea');
+      if (ta) setTimeout(() => ta.focus(), 50);
+
+      bodyEl.querySelector(`[data-save-playbook="${def.id}"]`).addEventListener('click', () => {
+        const v = bodyEl.querySelector(`[data-playbook-textarea="${def.id}"]`).value;
+        data.playbooks[def.id] = v;
+        saveData(data);
+        editingPlaybook = null;
+        renderPlaybooks();
+      });
+      bodyEl.querySelector(`[data-cancel-playbook="${def.id}"]`).addEventListener('click', () => {
+        editingPlaybook = null;
+        renderPlaybooks();
+      });
+    } else {
+      const hasContent = val && val.trim();
+      bodyEl.innerHTML = hasContent
+        ? `<div class="notes-display">${escapeHtml(val)}</div>`
+        : `<div class="notes-display empty">Nothing written yet. Click Edit to add your ${def.id === 'designing' ? 'design process' : def.id === 'building' ? 'build process' : def.id === 'shipping' ? 'shipping checklist' : 'marketing plan'}.</div>`;
+      if (editBtn) editBtn.style.display = 'inline-block';
+    }
+  }
+}
+
+// ===== Actions =====
+
+function addProject() {
+  const id = newId('proj');
+  // New projects go at the top
+  data.projects.unshift({ id, title: '', notes: '', createdAt: Date.now() });
+  saveData(data);
+  editingProjectId = id;
+  editingPlaybook = null;
+  render();
+  setTimeout(() => {
+    const ti = document.querySelector(`[data-title-input="${id}"]`);
+    if (ti) ti.focus();
+  }, 50);
+}
+
+function askConfirm(title, body, onOk) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-body').textContent = body || '';
+  pendingConfirm = onOk;
+  document.getElementById('confirm-modal').classList.add('show');
+}
+
+function closeConfirm() {
+  document.getElementById('confirm-modal').classList.remove('show');
+  pendingConfirm = null;
+}
+
+function exportJson() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `app-progress-${stamp}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJson(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (typeof imported !== 'object') throw new Error('Invalid format');
+      askConfirm('Replace all data?', 'This will overwrite your current playbooks and projects.', () => {
+        if (!imported.playbooks) imported.playbooks = {};
+        if (!imported.projects) imported.projects = [];
+        for (const def of PLAYBOOK_DEFS) {
+          if (imported.playbooks[def.id] === undefined) imported.playbooks[def.id] = '';
+        }
+        data = imported;
+        saveData(data);
+        render();
+      });
+    } catch (err) {
+      alert('Import failed: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ===== Event wiring =====
+
+document.getElementById('add-project-btn').addEventListener('click', addProject);
+
+document.querySelectorAll('[data-edit-playbook]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    editingPlaybook = btn.getAttribute('data-edit-playbook');
+    editingProjectId = null;
+    renderPlaybooks();
+  });
+});
+
+document.getElementById('confirm-cancel').addEventListener('click', closeConfirm);
+document.getElementById('confirm-ok').addEventListener('click', () => {
+  if (pendingConfirm) pendingConfirm();
+  closeConfirm();
+});
+
+document.getElementById('export-btn').addEventListener('click', exportJson);
+document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
+document.getElementById('import-file').addEventListener('change', e => {
+  if (e.target.files[0]) {
+    importJson(e.target.files[0]);
+    e.target.value = '';
+  }
+});
+
+render();
 </script>
 </body>
 </html>
