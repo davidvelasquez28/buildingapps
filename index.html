@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>App Progress Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.9/dist/purify.min.js"></script>
 <style>
   :root {
     --bg: #ffffff;
@@ -155,6 +157,117 @@
   .notes-display.empty {
     color: var(--muted);
     font-style: italic;
+  }
+
+  /* Rendered markdown — used when notes-display has rendered HTML */
+  .notes-display.rendered {
+    white-space: normal;
+  }
+  .notes-display.rendered h1,
+  .notes-display.rendered h2,
+  .notes-display.rendered h3,
+  .notes-display.rendered h4,
+  .notes-display.rendered h5,
+  .notes-display.rendered h6 {
+    font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 16px 0 8px;
+    line-height: 1.25;
+    color: var(--fg);
+  }
+  .notes-display.rendered h1:first-child,
+  .notes-display.rendered h2:first-child,
+  .notes-display.rendered h3:first-child,
+  .notes-display.rendered h4:first-child,
+  .notes-display.rendered p:first-child,
+  .notes-display.rendered ul:first-child,
+  .notes-display.rendered ol:first-child { margin-top: 0; }
+  .notes-display.rendered h1 { font-size: 19px; }
+  .notes-display.rendered h2 { font-size: 17px; }
+  .notes-display.rendered h3 { font-size: 15px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .notes-display.rendered h4,
+  .notes-display.rendered h5,
+  .notes-display.rendered h6 { font-size: 14px; }
+  .notes-display.rendered p { margin: 8px 0; }
+  .notes-display.rendered strong { font-weight: 700; color: var(--fg); }
+  .notes-display.rendered em { font-style: italic; }
+  .notes-display.rendered ul,
+  .notes-display.rendered ol { margin: 8px 0; padding-left: 22px; }
+  .notes-display.rendered li { margin: 3px 0; }
+  .notes-display.rendered li > p { margin: 4px 0; }
+  .notes-display.rendered a {
+    color: var(--accent);
+    text-decoration: underline;
+    word-break: break-all;
+  }
+  .notes-display.rendered code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    background: #eceff3;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .notes-display.rendered pre {
+    background: #1e1e1e;
+    color: #f5f5f5;
+    padding: 12px 14px;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin: 10px 0;
+  }
+  .notes-display.rendered pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+  }
+  .notes-display.rendered blockquote {
+    border-left: 3px solid var(--line-strong);
+    margin: 10px 0;
+    padding: 4px 12px;
+    color: #555;
+    font-style: italic;
+  }
+  .notes-display.rendered hr {
+    border: none;
+    border-top: 1px solid var(--line);
+    margin: 16px 0;
+  }
+  .notes-display.rendered table {
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 13px;
+  }
+  .notes-display.rendered th,
+  .notes-display.rendered td {
+    border: 1px solid var(--line);
+    padding: 6px 10px;
+    text-align: left;
+  }
+  .notes-display.rendered th {
+    background: var(--soft);
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: 700;
+  }
+  .notes-display.rendered input[type="checkbox"] {
+    margin-right: 6px;
+  }
+
+  .markdown-hint {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+  .markdown-hint code {
+    background: var(--soft);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 11px;
   }
 
   textarea {
@@ -426,6 +539,22 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+function renderMarkdown(str) {
+  if (!str) return '';
+  try {
+    if (window.marked) {
+      marked.setOptions({ breaks: true, gfm: true });
+    }
+    const rawHtml = window.marked ? marked.parse(str) : escapeHtml(str).replace(/\n/g, '<br>');
+    if (window.DOMPurify) {
+      return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+    }
+    return rawHtml;
+  } catch (e) {
+    return escapeHtml(str).replace(/\n/g, '<br>');
+  }
+}
+
 function newId(prefix) {
   return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
 }
@@ -454,7 +583,8 @@ function renderProjects() {
               <button class="btn danger" data-delete-project="${p.id}">Delete</button>
             </div>
           </div>
-          <textarea data-notes-input="${p.id}" placeholder="Notes for this project. Ideas, todos, things to fix, what you've changed, anything.">${escapeHtml(p.notes)}</textarea>
+          <textarea data-notes-input="${p.id}" placeholder="Notes for this project. Markdown supported.">${escapeHtml(p.notes)}</textarea>
+          <div class="markdown-hint"><code># Heading</code> · <code>## Subhead</code> · <code>**bold**</code> · <code>*italic*</code> · <code>- list</code> · <code>[link](url)</code> · <code>\`code\`</code></div>
           <div class="edit-row">
             <button class="btn primary" data-save-project="${p.id}">Save</button>
             <button class="btn" data-cancel-project="${p.id}">Cancel</button>
@@ -463,7 +593,7 @@ function renderProjects() {
       `;
     }
     const notes = p.notes && p.notes.trim()
-      ? `<div class="notes-display">${escapeHtml(p.notes)}</div>`
+      ? `<div class="notes-display rendered">${renderMarkdown(p.notes)}</div>`
       : `<div class="notes-display empty">No notes yet.</div>`;
     return `
       <div class="card" data-project="${p.id}">
@@ -552,6 +682,7 @@ function renderPlaybooks() {
     if (editingPlaybook === def.id) {
       bodyEl.innerHTML = `
         <textarea data-playbook-textarea="${def.id}" placeholder="${escapeHtml(def.placeholder)}">${escapeHtml(val)}</textarea>
+        <div class="markdown-hint"><code># Heading</code> · <code>## Subhead</code> · <code>**bold**</code> · <code>*italic*</code> · <code>- list</code> · <code>[link](url)</code> · <code>\`code\`</code></div>
         <div class="edit-row">
           <button class="btn primary" data-save-playbook="${def.id}">Save</button>
           <button class="btn" data-cancel-playbook="${def.id}">Cancel</button>
@@ -575,7 +706,7 @@ function renderPlaybooks() {
     } else {
       const hasContent = val && val.trim();
       bodyEl.innerHTML = hasContent
-        ? `<div class="notes-display">${escapeHtml(val)}</div>`
+        ? `<div class="notes-display rendered">${renderMarkdown(val)}</div>`
         : `<div class="notes-display empty">Nothing written yet. Click Edit to add your ${def.id === 'designing' ? 'design process' : def.id === 'building' ? 'build process' : def.id === 'shipping' ? 'shipping checklist' : 'marketing plan'}.</div>`;
       if (editBtn) editBtn.style.display = 'inline-block';
     }
