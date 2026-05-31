@@ -18,7 +18,7 @@
     --danger: #b91c1c;
     --success: #16a34a;
 
-    /* stage accents — used sparingly, on the important parts only */
+    /* stage accents — used sparingly */
     --c-design: #7c3aed;
     --c-build:  #2563eb;
     --c-ship:   #16a34a;
@@ -43,119 +43,162 @@
     letter-spacing: -0.01em;
   }
 
-  .container {
-    max-width: 720px;
+  /* ===== Layout ===== */
+  .app {
+    display: flex;
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 32px 24px 80px;
+    min-height: 100vh;
+  }
+  .sidebar {
+    width: 264px;
+    flex: none;
+    border-right: 1px solid var(--line);
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+  }
+  main#detail {
+    flex: 1;
+    min-width: 0;
+    padding: 34px 32px 60px;
   }
 
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 28px;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .title {
+  .brand {
     font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-weight: 700;
-    font-size: 22px;
+    font-size: 18px;
     letter-spacing: -0.01em;
-    margin: 0;
   }
-  .subtitle-top {
-    font-size: 12px;
+  .brand-sub {
+    font-size: 10px;
     color: var(--muted);
-    margin-top: 2px;
-    font-family: Helvetica, Arial, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
   }
 
-  .section-label {
+  /* ===== Nav ===== */
+  nav { margin-top: 22px; flex: 1; }
+  .nav-group-label {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--muted);
-    font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
     font-weight: 700;
-    margin: 36px 0 14px;
-  }
-  .section-label:first-of-type { margin-top: 8px; }
-
-  .section-label-row {
+    font-family: Helvetica, Arial, sans-serif;
+    margin: 20px 0 8px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin: 36px 0 14px;
+    justify-content: space-between;
   }
-  .section-label-row .section-label {
+  .nav-group-label:first-child { margin-top: 0; }
+  nav ul {
+    list-style: none;
     margin: 0;
+    padding: 0;
   }
-
-  .card {
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 18px;
-    margin-bottom: 14px;
-  }
-
-  /* ---- Collapsible behaviour ---- */
-  .card-toggle {
+  .nav-item {
     display: flex;
-    align-items: flex-start;
-    flex: 1;
-    min-width: 0;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 14px;
+    color: var(--fg);
+    margin-bottom: 2px;
   }
-  .chevron {
+  .nav-item:hover { background: var(--soft); }
+  .nav-item.active { font-weight: 700; }
+  .nav-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
     flex: none;
-    margin-right: 9px;
-    margin-top: 3px;
-    font-size: 11px;
-    line-height: 1;
-    color: var(--muted);
-    transition: transform 0.15s ease;
-    user-select: none;
   }
-  .card.open .chevron { transform: rotate(90deg); }
-  .card-toggle:hover h2 { color: var(--accent); }
+  .nav-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nav-empty {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 6px 10px;
+  }
+  .add-mini {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .add-mini:hover { opacity: 0.9; }
 
-  .card-body { display: none; }
-  .card.open .card-body,
-  .card.editing .card-body { display: block; }
+  .sidebar-footer {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .footer-note {
+    font-size: 10px;
+    color: var(--muted);
+    font-family: Helvetica, Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-align: center;
+    margin-top: 4px;
+  }
 
-  /* ---- Stage / project accent colors (the "important parts") ---- */
-  .card[data-playbook="designing"] { border-left: 3px solid var(--c-design); }
-  .card[data-playbook="building"]  { border-left: 3px solid var(--c-build); }
-  .card[data-playbook="shipping"]  { border-left: 3px solid var(--c-ship); }
-  .card[data-playbook="marketing"] { border-left: 3px solid var(--c-market); }
-  .card[data-project]              { border-left: 3px solid var(--accent); }
-
-  .card[data-playbook="designing"] .chevron { color: var(--c-design); }
-  .card[data-playbook="building"]  .chevron { color: var(--c-build); }
-  .card[data-playbook="shipping"]  .chevron { color: var(--c-ship); }
-  .card[data-playbook="marketing"] .chevron { color: var(--c-market); }
-  .card[data-project] .chevron     { color: var(--accent); }
-
-  .card-header {
+  /* ===== Detail panel ===== */
+  .detail-head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 18px;
     flex-wrap: wrap;
   }
-  .card-header h2 {
-    margin: 0;
-    font-size: 18px;
+  .detail-title-wrap {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+    min-width: 0;
   }
-  .card-sub {
+  .detail-bar {
+    width: 4px;
+    border-radius: 2px;
+    flex: none;
+  }
+  .detail-title { margin: 0; font-size: 24px; }
+  .detail-sub {
     font-size: 12px;
     color: var(--muted);
-    margin-top: 3px;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
+  .detail-title-input {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: Helvetica, Arial, sans-serif;
+    flex: 1;
+    min-width: 200px;
+  }
+
   .header-actions {
     display: flex;
     gap: 6px;
@@ -173,6 +216,7 @@
     color: var(--fg);
   }
   .btn:hover { background: var(--soft); }
+  .btn.full { width: 100%; }
   .btn.primary {
     background: var(--accent);
     color: #fff;
@@ -190,12 +234,12 @@
 
   .notes-display {
     white-space: pre-wrap;
-    padding: 12px 14px;
+    padding: 14px 16px;
     background: var(--soft);
-    border-radius: 4px;
-    font-size: 14px;
+    border-radius: 6px;
+    font-size: 14.5px;
     color: #333;
-    min-height: 44px;
+    min-height: 60px;
     word-break: break-word;
   }
   .notes-display.empty {
@@ -203,10 +247,8 @@
     font-style: italic;
   }
 
-  /* Rendered markdown — used when notes-display has rendered HTML */
-  .notes-display.rendered {
-    white-space: normal;
-  }
+  /* Rendered markdown */
+  .notes-display.rendered { white-space: normal; }
   .notes-display.rendered h1,
   .notes-display.rendered h2,
   .notes-display.rendered h3,
@@ -240,11 +282,7 @@
   .notes-display.rendered ol { margin: 8px 0; padding-left: 22px; }
   .notes-display.rendered li { margin: 3px 0; }
   .notes-display.rendered li > p { margin: 4px 0; }
-  .notes-display.rendered a {
-    color: var(--accent);
-    text-decoration: underline;
-    word-break: break-all;
-  }
+  .notes-display.rendered a { color: var(--accent); text-decoration: underline; word-break: break-all; }
   .notes-display.rendered code {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 12.5px;
@@ -262,12 +300,7 @@
     line-height: 1.5;
     margin: 10px 0;
   }
-  .notes-display.rendered pre code {
-    background: transparent;
-    color: inherit;
-    padding: 0;
-    font-size: inherit;
-  }
+  .notes-display.rendered pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
   .notes-display.rendered blockquote {
     border-left: 3px solid var(--line-strong);
     margin: 10px 0;
@@ -275,30 +308,12 @@
     color: #555;
     font-style: italic;
   }
-  .notes-display.rendered hr {
-    border: none;
-    border-top: 1px solid var(--line);
-    margin: 16px 0;
-  }
-  .notes-display.rendered table {
-    border-collapse: collapse;
-    margin: 10px 0;
-    font-size: 13px;
-  }
+  .notes-display.rendered hr { border: none; border-top: 1px solid var(--line); margin: 16px 0; }
+  .notes-display.rendered table { border-collapse: collapse; margin: 10px 0; font-size: 13px; }
   .notes-display.rendered th,
-  .notes-display.rendered td {
-    border: 1px solid var(--line);
-    padding: 6px 10px;
-    text-align: left;
-  }
-  .notes-display.rendered th {
-    background: var(--soft);
-    font-family: Helvetica, Arial, sans-serif;
-    font-weight: 700;
-  }
-  .notes-display.rendered input[type="checkbox"] {
-    margin-right: 6px;
-  }
+  .notes-display.rendered td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+  .notes-display.rendered th { background: var(--soft); font-family: Helvetica, Arial, sans-serif; font-weight: 700; }
+  .notes-display.rendered input[type="checkbox"] { margin-right: 6px; }
 
   .markdown-hint {
     font-size: 11px;
@@ -307,30 +322,23 @@
     margin-top: 6px;
     line-height: 1.6;
   }
-  .markdown-hint code {
-    background: var(--soft);
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-size: 11px;
-  }
+  .markdown-hint code { background: var(--soft); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
 
   textarea {
     width: 100%;
     border: 1px solid var(--line);
     border-radius: 4px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 14.5px;
     line-height: 1.55;
     resize: vertical;
-    min-height: 160px;
+    min-height: 240px;
     color: var(--fg);
     background: var(--bg);
+    margin-top: 4px;
   }
-  textarea:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
+  textarea:focus { outline: none; border-color: var(--accent); }
 
   input[type="text"] {
     border: 1px solid var(--line);
@@ -341,64 +349,17 @@
     color: var(--fg);
     background: var(--bg);
   }
-  input[type="text"]:focus {
-    outline: none;
-    border-color: var(--accent);
-  }
-
-  .project-title-display {
-    margin: 0;
-    font-size: 20px;
-  }
-  .project-title-input {
-    font-family: Helvetica, Arial, sans-serif;
-    font-weight: 700;
-    font-size: 18px;
-    padding: 6px 10px;
-    flex: 1;
-    min-width: 200px;
-  }
+  input[type="text"]:focus { outline: none; border-color: var(--accent); }
 
   .edit-row {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 12px;
   }
 
-  .empty-state {
-    color: var(--muted);
-    font-size: 14px;
-    padding: 28px 16px;
-    text-align: center;
-    font-style: italic;
-    border: 1px dashed var(--line);
-    border-radius: 8px;
-    margin-bottom: 14px;
-  }
-
-  .data-controls {
-    margin-top: 16px;
-    padding-top: 16px;
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .footer-note {
-    margin-top: 48px;
-    padding-top: 16px;
-    border-top: 1px solid var(--line);
-    text-align: center;
-    font-size: 11px;
-    color: var(--muted);
-    font-family: Helvetica, Arial, sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-
+  /* ===== Modal ===== */
   .modal-bg {
     display: none;
     position: fixed;
@@ -417,10 +378,7 @@
     max-width: 420px;
     width: 100%;
   }
-  .modal h3 {
-    margin: 0 0 16px;
-    font-size: 16px;
-  }
+  .modal h3 { margin: 0 0 16px; font-size: 16px; }
   .modal-buttons {
     display: flex;
     gap: 8px;
@@ -429,108 +387,49 @@
     flex-wrap: wrap;
   }
 
-  @media (max-width: 600px) {
-    .container { padding: 20px 16px 60px; }
-    .title { font-size: 18px; }
-    .card { padding: 14px; }
-    .project-title-display { font-size: 17px; }
+  @media (max-width: 760px) {
+    .app { flex-direction: column; min-height: 0; }
+    .sidebar {
+      width: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      padding: 20px 16px;
+    }
+    nav { flex: none; }
+    main#detail { padding: 24px 18px 50px; }
+    .detail-title { font-size: 20px; }
   }
 </style>
 </head>
 <body>
 
-<div class="container">
-
-  <div class="topbar">
+<div class="app">
+  <aside class="sidebar">
     <div>
-      <h1 class="title">App Progress</h1>
-      <div class="subtitle-top">Build &amp; ship tracker</div>
+      <div class="brand">App Progress</div>
+      <div class="brand-sub">Build &amp; ship tracker</div>
     </div>
-  </div>
 
-  <!-- PROJECTS -->
-  <div class="section-label-row">
-    <div class="section-label">Projects</div>
-    <button class="btn primary" id="add-project-btn">+ Add New Project</button>
-  </div>
-  <div id="projects-container"></div>
+    <nav>
+      <div class="nav-group-label">The Process</div>
+      <ul id="nav-playbooks"></ul>
 
-  <!-- THE PROCESS -->
-  <div class="section-label">The Process</div>
-
-  <div class="card" data-playbook="designing">
-    <div class="card-header">
-      <div class="card-toggle" data-toggle-playbook="designing">
-        <span class="chevron">&#9656;</span>
-        <div>
-          <h2>Designing the App</h2>
-          <div class="card-sub">Thinking up the idea, picking what to build, sketching it out.</div>
-        </div>
+      <div class="nav-group-label">
+        <span>Projects</span>
+        <button class="add-mini" id="add-project-btn" title="Add new project">+</button>
       </div>
-      <div class="header-actions">
-        <button class="btn" data-edit-playbook="designing">Edit</button>
-      </div>
+      <ul id="nav-projects"></ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn full" id="export-btn">Export JSON</button>
+      <button class="btn full" id="import-btn">Import JSON</button>
+      <input type="file" id="import-file" accept="application/json" style="display:none;">
+      <div class="footer-note">Saved in this browser · local only</div>
     </div>
-    <div data-playbook-body="designing" class="card-body"></div>
-  </div>
+  </aside>
 
-  <div class="card" data-playbook="building">
-    <div class="card-header">
-      <div class="card-toggle" data-toggle-playbook="building">
-        <span class="chevron">&#9656;</span>
-        <div>
-          <h2>Building in Cursor</h2>
-          <div class="card-sub">What to do once you're actually building it.</div>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="btn" data-edit-playbook="building">Edit</button>
-      </div>
-    </div>
-    <div data-playbook-body="building" class="card-body"></div>
-  </div>
-
-  <div class="card" data-playbook="shipping">
-    <div class="card-header">
-      <div class="card-toggle" data-toggle-playbook="shipping">
-        <span class="chevron">&#9656;</span>
-        <div>
-          <h2>Shipping to the App Store</h2>
-          <div class="card-sub">Submission, screenshots, metadata, review.</div>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="btn" data-edit-playbook="shipping">Edit</button>
-      </div>
-    </div>
-    <div data-playbook-body="shipping" class="card-body"></div>
-  </div>
-
-  <div class="card" data-playbook="marketing">
-    <div class="card-header">
-      <div class="card-toggle" data-toggle-playbook="marketing">
-        <span class="chevron">&#9656;</span>
-        <div>
-          <h2>Marketing</h2>
-          <div class="card-sub">How people hear about it. Channels, audiences, launch.</div>
-        </div>
-      </div>
-      <div class="header-actions">
-        <button class="btn" data-edit-playbook="marketing">Edit</button>
-      </div>
-    </div>
-    <div data-playbook-body="marketing" class="card-body"></div>
-  </div>
-
-  <div class="data-controls">
-    <button class="btn" id="export-btn">Export JSON</button>
-    <button class="btn" id="import-btn">Import JSON</button>
-    <input type="file" id="import-file" accept="application/json" style="display:none;">
-  </div>
-
-  <div class="footer-note">
-    Saved in this browser · per-device · local only
-  </div>
+  <main id="detail"></main>
 </div>
 
 <div class="modal-bg" id="confirm-modal">
@@ -548,11 +447,21 @@
 const STORAGE_KEY = 'app-progress-tracker-v1';
 
 const PLAYBOOK_DEFS = [
-  { id: 'designing', placeholder: 'Your process for designing apps. What you do before opening Cursor — picking the idea, validating it, sketching the UI, etc.' },
-  { id: 'building',  placeholder: 'Your process inside Cursor. Setup commands, prompting patterns, debugging steps, what to do when stuck.' },
-  { id: 'shipping',  placeholder: 'Your App Store submission checklist. Bundle ID setup, screenshots, metadata, review notes, common rejections to avoid.' },
-  { id: 'marketing', placeholder: 'How you market apps once they ship. Launch channels, posts, communities, what worked, what didn\'t.' }
+  { id: 'designing', label: 'Designing an App from Scratch', color: 'var(--c-design)',
+    sub: 'Thinking up the idea, picking what to build, sketching it out.',
+    placeholder: 'Your process for designing apps. What you do before opening Cursor — picking the idea, validating it, sketching the UI, etc.' },
+  { id: 'building', label: 'Building in Cursor', color: 'var(--c-build)',
+    sub: 'What to do once you\'re actually building it.',
+    placeholder: 'Your process inside Cursor. Setup commands, prompting patterns, debugging steps, what to do when stuck.' },
+  { id: 'shipping', label: 'Shipping to the App Store', color: 'var(--c-ship)',
+    sub: 'Submission, screenshots, metadata, review.',
+    placeholder: 'Your App Store submission checklist. Bundle ID setup, screenshots, metadata, review notes, common rejections to avoid.' },
+  { id: 'marketing', label: 'Marketing', color: 'var(--c-market)',
+    sub: 'How people hear about it. Channels, audiences, launch.',
+    placeholder: 'How you market apps once they ship. Launch channels, posts, communities, what worked, what didn\'t.' }
 ];
+
+const MD_HINT = '<div class="markdown-hint"><code># Heading</code> · <code>## Subhead</code> · <code>**bold**</code> · <code>*italic*</code> · <code>- list</code> · <code>[link](url)</code> · <code>`code`</code></div>';
 
 function loadData() {
   try {
@@ -576,15 +485,12 @@ function defaultData() {
   return { playbooks, projects: [] };
 }
 
-function saveData(d) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
-}
+function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
 
 let data = loadData();
-let editingPlaybook = null;     // id of playbook currently in edit mode (or null)
-let editingProjectId = null;    // id of project currently in edit mode (or null)
-let pendingConfirm = null;      // callback for confirm modal
-let expandedSet = new Set();    // ids (project + playbook) currently expanded; empty on load => everything starts collapsed
+let selected = { type: 'playbook', id: 'designing' };   // what's shown in the detail panel
+let editing = false;                                     // is the current item in edit mode
+let pendingConfirm = null;
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -599,13 +505,9 @@ function escapeHtml(str) {
 function renderMarkdown(str) {
   if (!str) return '';
   try {
-    if (window.marked) {
-      marked.setOptions({ breaks: true, gfm: true });
-    }
+    if (window.marked) marked.setOptions({ breaks: true, gfm: true });
     const rawHtml = window.marked ? marked.parse(str) : escapeHtml(str).replace(/\n/g, '<br>');
-    if (window.DOMPurify) {
-      return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
-    }
+    if (window.DOMPurify) return DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
     return rawHtml;
   } catch (e) {
     return escapeHtml(str).replace(/\n/g, '<br>');
@@ -619,175 +521,184 @@ function newId(prefix) {
 // ===== Render =====
 
 function render() {
-  renderProjects();
-  renderPlaybooks();
+  renderNav();
+  renderDetail();
 }
 
-function renderProjects() {
-  const container = document.getElementById('projects-container');
-  if (!data.projects || data.projects.length === 0) {
-    container.innerHTML = '<div class="empty-state">No projects yet. Click + Add New Project to start one.</div>';
-    return;
-  }
-
-  container.innerHTML = data.projects.map(p => {
-    if (editingProjectId === p.id) {
-      return `
-        <div class="card editing" data-project="${p.id}">
-          <div class="card-header">
-            <input type="text" class="project-title-input" data-title-input="${p.id}" value="${escapeHtml(p.title)}" placeholder="Project name (e.g. Workout App)">
-            <div class="header-actions">
-              <button class="btn danger" data-delete-project="${p.id}">Delete</button>
-            </div>
-          </div>
-          <textarea data-notes-input="${p.id}" placeholder="Notes for this project. Markdown supported.">${escapeHtml(p.notes)}</textarea>
-          <div class="markdown-hint"><code># Heading</code> · <code>## Subhead</code> · <code>**bold**</code> · <code>*italic*</code> · <code>- list</code> · <code>[link](url)</code> · <code>\`code\`</code></div>
-          <div class="edit-row">
-            <button class="btn primary" data-save-project="${p.id}">Save</button>
-            <button class="btn" data-cancel-project="${p.id}">Cancel</button>
-          </div>
-        </div>
-      `;
-    }
-    const open = expandedSet.has(p.id);
-    const notes = p.notes && p.notes.trim()
-      ? `<div class="notes-display rendered">${renderMarkdown(p.notes)}</div>`
-      : `<div class="notes-display empty">No notes yet.</div>`;
+function renderNav() {
+  // Playbooks
+  const pbUl = document.getElementById('nav-playbooks');
+  pbUl.innerHTML = PLAYBOOK_DEFS.map(def => {
+    const active = selected.type === 'playbook' && selected.id === def.id;
+    const style = active ? `style="box-shadow: inset 3px 0 0 ${def.color}; background:#f1f3f7;"` : '';
     return `
-      <div class="card ${open ? 'open' : ''}" data-project="${p.id}">
-        <div class="card-header">
-          <div class="card-toggle" data-toggle-project="${p.id}">
-            <span class="chevron">&#9656;</span>
-            <h2 class="project-title-display">${escapeHtml(p.title || 'Untitled Project')}</h2>
-          </div>
-          <div class="header-actions">
-            <button class="btn" data-edit-project="${p.id}">Edit</button>
-          </div>
-        </div>
-        <div class="card-body">${notes}</div>
-      </div>
-    `;
+      <li class="nav-item ${active ? 'active' : ''}" data-nav-playbook="${def.id}" ${style}>
+        <span class="nav-dot" style="background:${def.color}"></span>
+        <span class="nav-label">${escapeHtml(def.label)}</span>
+      </li>`;
   }).join('');
 
-  // Toggle (expand / collapse) a project
-  container.querySelectorAll('[data-toggle-project]').forEach(el => {
-    el.addEventListener('click', () => {
-      const id = el.getAttribute('data-toggle-project');
-      if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
-      renderProjects();
-    });
-  });
+  // Projects
+  const prUl = document.getElementById('nav-projects');
+  if (!data.projects.length) {
+    prUl.innerHTML = '<li class="nav-empty">No projects yet</li>';
+  } else {
+    prUl.innerHTML = data.projects.map(p => {
+      const active = selected.type === 'project' && selected.id === p.id;
+      const title = (p.title && p.title.trim()) ? p.title : 'Untitled Project';
+      const style = active ? 'style="box-shadow: inset 3px 0 0 var(--accent); background:#eef2ff;"' : '';
+      return `
+        <li class="nav-item ${active ? 'active' : ''}" data-nav-project="${p.id}" ${style}>
+          <span class="nav-dot" style="background:var(--accent)"></span>
+          <span class="nav-label">${escapeHtml(title)}</span>
+        </li>`;
+    }).join('');
+  }
 
-  // Wire up project buttons
-  container.querySelectorAll('[data-edit-project]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      editingProjectId = btn.getAttribute('data-edit-project');
-      editingPlaybook = null;
-      render();
-      // Focus title if it's a fresh empty one, else notes
-      setTimeout(() => {
-        const p = data.projects.find(x => x.id === editingProjectId);
-        if (p && !p.title) {
-          const ti = document.querySelector(`[data-title-input="${editingProjectId}"]`);
-          if (ti) ti.focus();
-        } else {
-          const ta = document.querySelector(`[data-notes-input="${editingProjectId}"]`);
-          if (ta) ta.focus();
-        }
-      }, 50);
-    });
-  });
+  pbUl.querySelectorAll('[data-nav-playbook]').forEach(el =>
+    el.addEventListener('click', () => selectItem('playbook', el.getAttribute('data-nav-playbook'))));
+  prUl.querySelectorAll('[data-nav-project]').forEach(el =>
+    el.addEventListener('click', () => selectItem('project', el.getAttribute('data-nav-project'))));
+}
 
-  container.querySelectorAll('[data-save-project]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-save-project');
-      const p = data.projects.find(x => x.id === id);
-      if (!p) return;
-      const titleEl = document.querySelector(`[data-title-input="${id}"]`);
-      const notesEl = document.querySelector(`[data-notes-input="${id}"]`);
-      p.title = (titleEl.value || '').trim();
-      p.notes = notesEl.value;
+function selectItem(type, id) {
+  selected = { type, id };
+  editing = false;
+  render();
+}
+
+function renderDetail() {
+  const main = document.getElementById('detail');
+
+  // Guard against a stale selection (e.g. a deleted project)
+  if (selected.type === 'project' && !data.projects.find(p => p.id === selected.id)) {
+    selected = { type: 'playbook', id: 'designing' };
+  }
+
+  if (selected.type === 'playbook') renderPlaybookDetail(main);
+  else renderProjectDetail(main);
+}
+
+function renderPlaybookDetail(main) {
+  const def = PLAYBOOK_DEFS.find(d => d.id === selected.id) || PLAYBOOK_DEFS[0];
+  const val = data.playbooks[def.id] || '';
+
+  if (editing) {
+    main.innerHTML = `
+      <div class="detail-head">
+        <div class="detail-title-wrap">
+          <span class="detail-bar" style="background:${def.color}"></span>
+          <div>
+            <h1 class="detail-title">${escapeHtml(def.label)}</h1>
+            <div class="detail-sub">${escapeHtml(def.sub)}</div>
+          </div>
+        </div>
+      </div>
+      <textarea id="pb-text" placeholder="${escapeHtml(def.placeholder)}">${escapeHtml(val)}</textarea>
+      ${MD_HINT}
+      <div class="edit-row">
+        <button class="btn primary" id="pb-save">Save</button>
+        <button class="btn" id="pb-cancel">Cancel</button>
+      </div>`;
+    const ta = document.getElementById('pb-text');
+    if (ta) setTimeout(() => ta.focus(), 50);
+    document.getElementById('pb-save').addEventListener('click', () => {
+      data.playbooks[def.id] = document.getElementById('pb-text').value;
       saveData(data);
-      editingProjectId = null;
-      expandedSet.add(id);   // show what was just edited
+      editing = false;
       render();
     });
-  });
+    document.getElementById('pb-cancel').addEventListener('click', () => { editing = false; render(); });
+  } else {
+    const has = val && val.trim();
+    main.innerHTML = `
+      <div class="detail-head">
+        <div class="detail-title-wrap">
+          <span class="detail-bar" style="background:${def.color}"></span>
+          <div>
+            <h1 class="detail-title">${escapeHtml(def.label)}</h1>
+            <div class="detail-sub">${escapeHtml(def.sub)}</div>
+          </div>
+        </div>
+        <div class="header-actions"><button class="btn" id="pb-edit">Edit</button></div>
+      </div>
+      ${has
+        ? `<div class="notes-display rendered">${renderMarkdown(val)}</div>`
+        : `<div class="notes-display empty">Nothing written yet. Click Edit to add this section.</div>`}`;
+    document.getElementById('pb-edit').addEventListener('click', () => { editing = true; render(); });
+  }
+}
 
-  container.querySelectorAll('[data-cancel-project]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-cancel-project');
-      const p = data.projects.find(x => x.id === id);
-      // If the project was never saved (no title and no notes), drop it
-      if (p && !p.title && !p.notes) {
-        data.projects = data.projects.filter(x => x.id !== id);
+function renderProjectDetail(main) {
+  const p = data.projects.find(x => x.id === selected.id);
+  if (!p) { selected = { type: 'playbook', id: 'designing' }; renderDetail(); return; }
+
+  if (editing) {
+    main.innerHTML = `
+      <div class="detail-head">
+        <div class="detail-title-wrap" style="flex:1;">
+          <span class="detail-bar" style="background:var(--accent)"></span>
+          <input type="text" id="pr-title" class="detail-title-input" value="${escapeHtml(p.title)}" placeholder="Project name (e.g. Workout App)">
+        </div>
+        <div class="header-actions"><button class="btn danger" id="pr-delete">Delete</button></div>
+      </div>
+      <textarea id="pr-text" placeholder="Notes for this project. Markdown supported.">${escapeHtml(p.notes)}</textarea>
+      ${MD_HINT}
+      <div class="edit-row">
+        <button class="btn primary" id="pr-save">Save</button>
+        <button class="btn" id="pr-cancel">Cancel</button>
+      </div>`;
+    setTimeout(() => {
+      const t = document.getElementById(p.title ? 'pr-text' : 'pr-title');
+      if (t) t.focus();
+    }, 50);
+
+    document.getElementById('pr-save').addEventListener('click', () => {
+      p.title = (document.getElementById('pr-title').value || '').trim();
+      p.notes = document.getElementById('pr-text').value;
+      saveData(data);
+      editing = false;
+      render();
+    });
+    document.getElementById('pr-cancel').addEventListener('click', () => {
+      // Drop a brand-new project that was never filled in
+      if (!p.title && !p.notes) {
+        data.projects = data.projects.filter(x => x.id !== p.id);
         saveData(data);
+        selected = { type: 'playbook', id: 'designing' };
       }
-      editingProjectId = null;
+      editing = false;
       render();
     });
-  });
-
-  container.querySelectorAll('[data-delete-project]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-delete-project');
-      const p = data.projects.find(x => x.id === id);
-      const name = (p && p.title) ? `"${p.title}"` : 'this project';
+    document.getElementById('pr-delete').addEventListener('click', () => {
+      const name = p.title ? `"${p.title}"` : 'this project';
       askConfirm(`Delete ${name}?`, 'This cannot be undone.', () => {
-        data.projects = data.projects.filter(x => x.id !== id);
+        data.projects = data.projects.filter(x => x.id !== p.id);
         saveData(data);
-        editingProjectId = null;
-        expandedSet.delete(id);
+        selected = data.projects.length
+          ? { type: 'project', id: data.projects[0].id }
+          : { type: 'playbook', id: 'designing' };
+        editing = false;
         render();
       });
     });
-  });
-}
-
-function renderPlaybooks() {
-  for (const def of PLAYBOOK_DEFS) {
-    const card = document.querySelector(`.card[data-playbook="${def.id}"]`);
-    const bodyEl = document.querySelector(`[data-playbook-body="${def.id}"]`);
-    const editBtn = document.querySelector(`[data-edit-playbook="${def.id}"]`);
-    if (!bodyEl || !card) continue;
-    const val = data.playbooks[def.id] || '';
-    const editing = editingPlaybook === def.id;
-
-    card.classList.toggle('editing', editing);
-    card.classList.toggle('open', expandedSet.has(def.id) || editing);
-
-    if (editing) {
-      bodyEl.innerHTML = `
-        <textarea data-playbook-textarea="${def.id}" placeholder="${escapeHtml(def.placeholder)}">${escapeHtml(val)}</textarea>
-        <div class="markdown-hint"><code># Heading</code> · <code>## Subhead</code> · <code>**bold**</code> · <code>*italic*</code> · <code>- list</code> · <code>[link](url)</code> · <code>\`code\`</code></div>
-        <div class="edit-row">
-          <button class="btn primary" data-save-playbook="${def.id}">Save</button>
-          <button class="btn" data-cancel-playbook="${def.id}">Cancel</button>
+  } else {
+    const has = p.notes && p.notes.trim();
+    main.innerHTML = `
+      <div class="detail-head">
+        <div class="detail-title-wrap">
+          <span class="detail-bar" style="background:var(--accent)"></span>
+          <div>
+            <h1 class="detail-title">${escapeHtml(p.title || 'Untitled Project')}</h1>
+            <div class="detail-sub">Project</div>
+          </div>
         </div>
-      `;
-      if (editBtn) editBtn.style.display = 'none';
-      const ta = bodyEl.querySelector('textarea');
-      if (ta) setTimeout(() => ta.focus(), 50);
-
-      bodyEl.querySelector(`[data-save-playbook="${def.id}"]`).addEventListener('click', () => {
-        const v = bodyEl.querySelector(`[data-playbook-textarea="${def.id}"]`).value;
-        data.playbooks[def.id] = v;
-        saveData(data);
-        editingPlaybook = null;
-        expandedSet.add(def.id);   // show what was just edited
-        renderPlaybooks();
-      });
-      bodyEl.querySelector(`[data-cancel-playbook="${def.id}"]`).addEventListener('click', () => {
-        editingPlaybook = null;
-        renderPlaybooks();
-      });
-    } else {
-      const hasContent = val && val.trim();
-      bodyEl.innerHTML = hasContent
-        ? `<div class="notes-display rendered">${renderMarkdown(val)}</div>`
-        : `<div class="notes-display empty">Nothing written yet. Click Edit to add your ${def.id === 'designing' ? 'design process' : def.id === 'building' ? 'build process' : def.id === 'shipping' ? 'shipping checklist' : 'marketing plan'}.</div>`;
-      if (editBtn) editBtn.style.display = 'inline-block';
-    }
+        <div class="header-actions"><button class="btn" id="pr-edit">Edit</button></div>
+      </div>
+      ${has
+        ? `<div class="notes-display rendered">${renderMarkdown(p.notes)}</div>`
+        : `<div class="notes-display empty">No notes yet. Click Edit to add some.</div>`}`;
+    document.getElementById('pr-edit').addEventListener('click', () => { editing = true; render(); });
   }
 }
 
@@ -795,16 +706,11 @@ function renderPlaybooks() {
 
 function addProject() {
   const id = newId('proj');
-  // New projects go at the top
   data.projects.unshift({ id, title: '', notes: '', createdAt: Date.now() });
   saveData(data);
-  editingProjectId = id;
-  editingPlaybook = null;
+  selected = { type: 'project', id };
+  editing = true;
   render();
-  setTimeout(() => {
-    const ti = document.querySelector(`[data-title-input="${id}"]`);
-    if (ti) ti.focus();
-  }, 50);
 }
 
 function askConfirm(title, body, onOk) {
@@ -813,7 +719,6 @@ function askConfirm(title, body, onOk) {
   pendingConfirm = onOk;
   document.getElementById('confirm-modal').classList.add('show');
 }
-
 function closeConfirm() {
   document.getElementById('confirm-modal').classList.remove('show');
   pendingConfirm = null;
@@ -844,7 +749,8 @@ function importJson(file) {
         }
         data = imported;
         saveData(data);
-        expandedSet = new Set();   // imported data starts collapsed too
+        selected = { type: 'playbook', id: 'designing' };
+        editing = false;
         render();
       });
     } catch (err) {
@@ -854,41 +760,18 @@ function importJson(file) {
   reader.readAsText(file);
 }
 
-// ===== Event wiring =====
+// ===== Wiring =====
 
 document.getElementById('add-project-btn').addEventListener('click', addProject);
-
-document.querySelectorAll('[data-edit-playbook]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    editingPlaybook = btn.getAttribute('data-edit-playbook');
-    editingProjectId = null;
-    renderPlaybooks();
-  });
-});
-
-// Expand / collapse playbook cards
-document.querySelectorAll('[data-toggle-playbook]').forEach(el => {
-  el.addEventListener('click', () => {
-    const id = el.getAttribute('data-toggle-playbook');
-    if (editingPlaybook === id) return;   // don't collapse mid-edit
-    if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
-    renderPlaybooks();
-  });
-});
-
 document.getElementById('confirm-cancel').addEventListener('click', closeConfirm);
 document.getElementById('confirm-ok').addEventListener('click', () => {
   if (pendingConfirm) pendingConfirm();
   closeConfirm();
 });
-
 document.getElementById('export-btn').addEventListener('click', exportJson);
 document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-file').click());
 document.getElementById('import-file').addEventListener('change', e => {
-  if (e.target.files[0]) {
-    importJson(e.target.files[0]);
-    e.target.value = '';
-  }
+  if (e.target.files[0]) { importJson(e.target.files[0]); e.target.value = ''; }
 });
 
 render();
