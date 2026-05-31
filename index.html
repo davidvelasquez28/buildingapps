@@ -17,6 +17,12 @@
     --soft: #f7f7f7;
     --danger: #b91c1c;
     --success: #16a34a;
+
+    /* stage accents — used sparingly, on the important parts only */
+    --c-design: #7c3aed;
+    --c-build:  #2563eb;
+    --c-ship:   #16a34a;
+    --c-market: #d97706;
   }
 
   * { box-sizing: border-box; }
@@ -95,6 +101,44 @@
     margin-bottom: 14px;
   }
 
+  /* ---- Collapsible behaviour ---- */
+  .card-toggle {
+    display: flex;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .chevron {
+    flex: none;
+    margin-right: 9px;
+    margin-top: 3px;
+    font-size: 11px;
+    line-height: 1;
+    color: var(--muted);
+    transition: transform 0.15s ease;
+    user-select: none;
+  }
+  .card.open .chevron { transform: rotate(90deg); }
+  .card-toggle:hover h2 { color: var(--accent); }
+
+  .card-body { display: none; }
+  .card.open .card-body,
+  .card.editing .card-body { display: block; }
+
+  /* ---- Stage / project accent colors (the "important parts") ---- */
+  .card[data-playbook="designing"] { border-left: 3px solid var(--c-design); }
+  .card[data-playbook="building"]  { border-left: 3px solid var(--c-build); }
+  .card[data-playbook="shipping"]  { border-left: 3px solid var(--c-ship); }
+  .card[data-playbook="marketing"] { border-left: 3px solid var(--c-market); }
+  .card[data-project]              { border-left: 3px solid var(--accent); }
+
+  .card[data-playbook="designing"] .chevron { color: var(--c-design); }
+  .card[data-playbook="building"]  .chevron { color: var(--c-build); }
+  .card[data-playbook="shipping"]  .chevron { color: var(--c-ship); }
+  .card[data-playbook="marketing"] .chevron { color: var(--c-market); }
+  .card[data-project] .chevron     { color: var(--accent); }
+
   .card-header {
     display: flex;
     align-items: flex-start;
@@ -130,9 +174,9 @@
   }
   .btn:hover { background: var(--soft); }
   .btn.primary {
-    background: var(--fg);
-    color: var(--bg);
-    border-color: var(--fg);
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
     font-family: Helvetica, Arial, sans-serif;
     font-weight: 700;
     text-transform: uppercase;
@@ -140,7 +184,7 @@
     font-size: 11px;
     padding: 8px 16px;
   }
-  .btn.primary:hover { opacity: 0.85; background: var(--fg); }
+  .btn.primary:hover { opacity: 0.9; background: var(--accent); }
   .btn.danger { color: var(--danger); }
   .btn.danger:hover { background: #fef2f2; }
 
@@ -416,54 +460,66 @@
 
   <div class="card" data-playbook="designing">
     <div class="card-header">
-      <div>
-        <h2>Designing the App</h2>
-        <div class="card-sub">Thinking up the idea, picking what to build, sketching it out.</div>
+      <div class="card-toggle" data-toggle-playbook="designing">
+        <span class="chevron">&#9656;</span>
+        <div>
+          <h2>Designing the App</h2>
+          <div class="card-sub">Thinking up the idea, picking what to build, sketching it out.</div>
+        </div>
       </div>
       <div class="header-actions">
         <button class="btn" data-edit-playbook="designing">Edit</button>
       </div>
     </div>
-    <div data-playbook-body="designing"></div>
+    <div data-playbook-body="designing" class="card-body"></div>
   </div>
 
   <div class="card" data-playbook="building">
     <div class="card-header">
-      <div>
-        <h2>Building in Cursor</h2>
-        <div class="card-sub">What to do once you're actually building it.</div>
+      <div class="card-toggle" data-toggle-playbook="building">
+        <span class="chevron">&#9656;</span>
+        <div>
+          <h2>Building in Cursor</h2>
+          <div class="card-sub">What to do once you're actually building it.</div>
+        </div>
       </div>
       <div class="header-actions">
         <button class="btn" data-edit-playbook="building">Edit</button>
       </div>
     </div>
-    <div data-playbook-body="building"></div>
+    <div data-playbook-body="building" class="card-body"></div>
   </div>
 
   <div class="card" data-playbook="shipping">
     <div class="card-header">
-      <div>
-        <h2>Shipping to the App Store</h2>
-        <div class="card-sub">Submission, screenshots, metadata, review.</div>
+      <div class="card-toggle" data-toggle-playbook="shipping">
+        <span class="chevron">&#9656;</span>
+        <div>
+          <h2>Shipping to the App Store</h2>
+          <div class="card-sub">Submission, screenshots, metadata, review.</div>
+        </div>
       </div>
       <div class="header-actions">
         <button class="btn" data-edit-playbook="shipping">Edit</button>
       </div>
     </div>
-    <div data-playbook-body="shipping"></div>
+    <div data-playbook-body="shipping" class="card-body"></div>
   </div>
 
   <div class="card" data-playbook="marketing">
     <div class="card-header">
-      <div>
-        <h2>Marketing</h2>
-        <div class="card-sub">How people hear about it. Channels, audiences, launch.</div>
+      <div class="card-toggle" data-toggle-playbook="marketing">
+        <span class="chevron">&#9656;</span>
+        <div>
+          <h2>Marketing</h2>
+          <div class="card-sub">How people hear about it. Channels, audiences, launch.</div>
+        </div>
       </div>
       <div class="header-actions">
         <button class="btn" data-edit-playbook="marketing">Edit</button>
       </div>
     </div>
-    <div data-playbook-body="marketing"></div>
+    <div data-playbook-body="marketing" class="card-body"></div>
   </div>
 
   <div class="data-controls">
@@ -528,6 +584,7 @@ let data = loadData();
 let editingPlaybook = null;     // id of playbook currently in edit mode (or null)
 let editingProjectId = null;    // id of project currently in edit mode (or null)
 let pendingConfirm = null;      // callback for confirm modal
+let expandedSet = new Set();    // ids (project + playbook) currently expanded; empty on load => everything starts collapsed
 
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
@@ -576,7 +633,7 @@ function renderProjects() {
   container.innerHTML = data.projects.map(p => {
     if (editingProjectId === p.id) {
       return `
-        <div class="card" data-project="${p.id}">
+        <div class="card editing" data-project="${p.id}">
           <div class="card-header">
             <input type="text" class="project-title-input" data-title-input="${p.id}" value="${escapeHtml(p.title)}" placeholder="Project name (e.g. Workout App)">
             <div class="header-actions">
@@ -592,21 +649,34 @@ function renderProjects() {
         </div>
       `;
     }
+    const open = expandedSet.has(p.id);
     const notes = p.notes && p.notes.trim()
       ? `<div class="notes-display rendered">${renderMarkdown(p.notes)}</div>`
       : `<div class="notes-display empty">No notes yet.</div>`;
     return `
-      <div class="card" data-project="${p.id}">
+      <div class="card ${open ? 'open' : ''}" data-project="${p.id}">
         <div class="card-header">
-          <h2 class="project-title-display">${escapeHtml(p.title || 'Untitled Project')}</h2>
+          <div class="card-toggle" data-toggle-project="${p.id}">
+            <span class="chevron">&#9656;</span>
+            <h2 class="project-title-display">${escapeHtml(p.title || 'Untitled Project')}</h2>
+          </div>
           <div class="header-actions">
             <button class="btn" data-edit-project="${p.id}">Edit</button>
           </div>
         </div>
-        ${notes}
+        <div class="card-body">${notes}</div>
       </div>
     `;
   }).join('');
+
+  // Toggle (expand / collapse) a project
+  container.querySelectorAll('[data-toggle-project]').forEach(el => {
+    el.addEventListener('click', () => {
+      const id = el.getAttribute('data-toggle-project');
+      if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
+      renderProjects();
+    });
+  });
 
   // Wire up project buttons
   container.querySelectorAll('[data-edit-project]').forEach(btn => {
@@ -639,6 +709,7 @@ function renderProjects() {
       p.notes = notesEl.value;
       saveData(data);
       editingProjectId = null;
+      expandedSet.add(id);   // show what was just edited
       render();
     });
   });
@@ -666,6 +737,7 @@ function renderProjects() {
         data.projects = data.projects.filter(x => x.id !== id);
         saveData(data);
         editingProjectId = null;
+        expandedSet.delete(id);
         render();
       });
     });
@@ -674,12 +746,17 @@ function renderProjects() {
 
 function renderPlaybooks() {
   for (const def of PLAYBOOK_DEFS) {
+    const card = document.querySelector(`.card[data-playbook="${def.id}"]`);
     const bodyEl = document.querySelector(`[data-playbook-body="${def.id}"]`);
     const editBtn = document.querySelector(`[data-edit-playbook="${def.id}"]`);
-    if (!bodyEl) continue;
+    if (!bodyEl || !card) continue;
     const val = data.playbooks[def.id] || '';
+    const editing = editingPlaybook === def.id;
 
-    if (editingPlaybook === def.id) {
+    card.classList.toggle('editing', editing);
+    card.classList.toggle('open', expandedSet.has(def.id) || editing);
+
+    if (editing) {
       bodyEl.innerHTML = `
         <textarea data-playbook-textarea="${def.id}" placeholder="${escapeHtml(def.placeholder)}">${escapeHtml(val)}</textarea>
         <div class="markdown-hint"><code># Heading</code> · <code>## Subhead</code> · <code>**bold**</code> · <code>*italic*</code> · <code>- list</code> · <code>[link](url)</code> · <code>\`code\`</code></div>
@@ -697,6 +774,7 @@ function renderPlaybooks() {
         data.playbooks[def.id] = v;
         saveData(data);
         editingPlaybook = null;
+        expandedSet.add(def.id);   // show what was just edited
         renderPlaybooks();
       });
       bodyEl.querySelector(`[data-cancel-playbook="${def.id}"]`).addEventListener('click', () => {
@@ -766,6 +844,7 @@ function importJson(file) {
         }
         data = imported;
         saveData(data);
+        expandedSet = new Set();   // imported data starts collapsed too
         render();
       });
     } catch (err) {
@@ -783,6 +862,16 @@ document.querySelectorAll('[data-edit-playbook]').forEach(btn => {
   btn.addEventListener('click', () => {
     editingPlaybook = btn.getAttribute('data-edit-playbook');
     editingProjectId = null;
+    renderPlaybooks();
+  });
+});
+
+// Expand / collapse playbook cards
+document.querySelectorAll('[data-toggle-playbook]').forEach(el => {
+  el.addEventListener('click', () => {
+    const id = el.getAttribute('data-toggle-playbook');
+    if (editingPlaybook === id) return;   // don't collapse mid-edit
+    if (expandedSet.has(id)) expandedSet.delete(id); else expandedSet.add(id);
     renderPlaybooks();
   });
 });
